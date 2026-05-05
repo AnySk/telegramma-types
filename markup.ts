@@ -184,6 +184,10 @@ export declare namespace KeyboardButton {
     /** If specified, pressing the button will open a list of suitable chats. Tapping on a chat will send its identifier to the bot in a “chat_shared” service message. Available in private chats only. */
     request_chat: KeyboardButtonRequestChat;
   }
+  export interface RequestManagedBot extends Common {
+    /** If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. */
+    request_managed_bot: KeyboardButtonRequestManagedBot;
+  }
   export interface RequestContact extends Common {
     /** If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only. */
     request_contact: boolean;
@@ -206,6 +210,7 @@ export declare namespace KeyboardButton {
 export type KeyboardButton =
   | KeyboardButton.RequestUsers
   | KeyboardButton.RequestChat
+  | KeyboardButton.RequestManagedBot
   | KeyboardButton.RequestPoll
   | KeyboardButton.RequestContact
   | KeyboardButton.RequestLocation
@@ -294,4 +299,20 @@ export interface KeyboardButtonRequestChat {
   request_username?: boolean;
   /** Pass True to request the chat's photo */
   request_photo?: boolean;
+}
+
+/** This object defines the parameters for the creation of a managed bot. */
+export interface KeyboardButtonRequestManagedBot {
+  /** Signed 32-bit identifier of the request. Must be unique within the message */
+  request_id: number;
+  /** Suggested name for the bot */
+  suggested_name?: string;
+  /** Suggested username for the bot */
+  suggested_username?: string;
+}
+
+/** Describes a keyboard button to be used by a user of a Mini App. */
+export interface PreparedKeyboardButton {
+  /** Unique identifier of the keyboard button */
+  id: string;
 }

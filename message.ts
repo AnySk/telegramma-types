@@ -6,6 +6,7 @@ import type {
   DirectMessagesTopic,
   File,
   Gift,
+  ManagedBotCreated,
   StarAmount,
   SuggestedPostInfo,
   SuggestedPostPrice,
@@ -54,6 +55,8 @@ export declare namespace Message {
     reply_to_story?: Story;
     /** Identifier of the specific checklist task that is being replied to */
     reply_to_checklist_task_id?: number;
+    /** Persistent identifier of the specific poll option that is being replied to */
+    reply_to_poll_option_id?: string;
     /** Bot through which the message was sent */
     via_bot?: User;
     /** Date the message was last edited in Unix time */
@@ -251,6 +254,10 @@ export declare namespace Message {
     /** Service message: a chat was shared with the bot */
     chat_shared: ChatShared;
   }
+  export interface ManagedBotCreatedMessage extends ServiceMessage {
+    /** Service message: a managed bot was created */
+    managed_bot_created: ManagedBotCreated;
+  }
   export interface GiftMessage extends ServiceMessage {
     /** Service message: a regular gift was sent or received */
     gift: GiftInfo;
@@ -294,6 +301,14 @@ export declare namespace Message {
   export interface ChecklistTasksAddedMessage extends ServiceMessage {
     /** Service message: tasks were added to a checklist */
     checklist_tasks_added: ChecklistTasksAdded;
+  }
+  export interface PollOptionAddedMessage extends ServiceMessage {
+    /** Service message: an option was added to a poll */
+    poll_option_added: PollOptionAdded;
+  }
+  export interface PollOptionDeletedMessage extends ServiceMessage {
+    /** Service message: an option was deleted from a poll */
+    poll_option_deleted: PollOptionDeleted;
   }
   export interface DirectMessagePriceChangedMessage extends ServiceMessage {
     /** Service message: the price for paid messages in the corresponding direct messages chat of a channel has changed */
@@ -405,6 +420,7 @@ export type ServiceMessageBundle =
   | Message.SuccessfulPaymentMessage
   | Message.UsersSharedMessage
   | Message.ChatSharedMessage
+  | Message.ManagedBotCreatedMessage
   | Message.GiftMessage
   | Message.UniqueGiftMessage
   | Message.GiftUpgradeSentMessage
@@ -413,6 +429,8 @@ export type ServiceMessageBundle =
   | Message.PassportDataMessage
   | Message.ProximityAlertTriggeredMessage
   | Message.BoostAddedMessage
+  | Message.PollOptionAddedMessage
+  | Message.PollOptionDeletedMessage
   | Message.ForumTopicCreatedMessage
   | Message.ForumTopicEditedMessage
   | Message.ForumTopicClosedMessage
@@ -696,6 +714,9 @@ export declare namespace MessageEntity {
     /** For “custom_emoji” only, unique identifier of the custom emoji. Use getCustomEmojiStickers to get full information about the sticker */
     custom_emoji_id: string;
   }
+  export interface DateTime extends Abstract {
+    type: "date_time";
+  }
 }
 
 /** This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc. */
@@ -718,7 +739,8 @@ export type MessageEntity =
   | MessageEntity.PreMessage
   | MessageEntity.TextLink
   | MessageEntity.TextMention
-  | MessageEntity.CustomEmoji;
+  | MessageEntity.CustomEmoji
+  | MessageEntity.DateTime;
 
 /** This object contains information about the quoted part of a message that is replied to by the given message. */
 export interface TextQuote {
@@ -887,6 +909,8 @@ export interface ReplyParameters {
   quote_position?: number;
   /** Identifier of the specific checklist task to be replied to */
   checklist_task_id?: number;
+  /** Persistent identifier of the specific poll option to be replied to */
+  poll_option_id?: string;
 }
 
 /** This object describes the origin of a message. It can be one of
@@ -1186,7 +1210,7 @@ export interface InputChecklistTask {
   text: string;
   /** Mode for parsing entities in the text. See formatting options for more details. */
   parse_mode?: ParseMode;
-  /** List of special entities that appear in the text, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are allowed. */
+  /** List of special entities that appear in the text, which can be specified instead of parse_mode. */
   text_entities?: (
     | MessageEntity.Bold
     | MessageEntity.Italic
@@ -1194,6 +1218,7 @@ export interface InputChecklistTask {
     | MessageEntity.Strikethrough
     | MessageEntity.Spoiler
     | MessageEntity.CustomEmoji
+    | MessageEntity.DateTime
   )[];
 }
 
@@ -1203,7 +1228,7 @@ export interface InputChecklist {
   title: string;
   /** Mode for parsing entities in the title. See formatting options for more details. */
   parse_mode?: ParseMode;
-  /** List of special entities that appear in the title, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are allowed. */
+  /** List of special entities that appear in the title, which can be specified instead of parse_mode. */
   title_entities?: (
     | MessageEntity.Bold
     | MessageEntity.Italic
@@ -1211,6 +1236,7 @@ export interface InputChecklist {
     | MessageEntity.Strikethrough
     | MessageEntity.Spoiler
     | MessageEntity.CustomEmoji
+    | MessageEntity.DateTime
   )[];
   /** List of 1-30 tasks in the checklist */
   tasks: InputChecklistTask[];
@@ -1262,12 +1288,20 @@ export interface Dice {
 
 /** This object contains information about one answer option in a poll. */
 export interface PollOption {
+  /** Unique identifier of the option, persistent on option addition and deletion */
+  persistent_id: string;
   /** Option text, 1-100 characters */
   text: string;
   /** Special entities that appear in the option text. Currently, only custom emoji entities are allowed in poll option texts */
   text_entities?: MessageEntity.CustomEmoji[];
-  /** Number of users that voted for this option */
+  /** Number of users that voted for this option; may be 0 if unknown */
   voter_count: number;
+  /** User who added the option */
+  added_by_user?: User;
+  /** Chat that added the option */
+  added_by_chat?: Chat;
+  /** Point in time when the option was added */
+  addition_date?: number;
 }
 
 /** This object contains information about one answer option in a poll to be sent. */
@@ -1293,6 +1327,8 @@ export interface PollAnswer {
   user?: User;
   /** 0-based identifiers of answer options, chosen by the user. May be empty if the user retracted their vote. */
   option_ids: number[];
+  /** Persistent identifiers of chosen answer options. May be empty if the vote was retracted. */
+  option_persistent_ids: string[];
 }
 
 /** This object contains information about a poll. */
@@ -1315,8 +1351,10 @@ export interface Poll {
   type: "regular" | "quiz";
   /** True, if the poll allows multiple answers */
   allows_multiple_answers: boolean;
-  /** 0-based identifier of the correct answer option. Available only for polls in the quiz mode, which are closed, or was sent (not forwarded) by the bot or to the private chat with the bot. */
-  correct_option_id?: number;
+  /** True, if the poll allows to change the chosen answer options */
+  allows_revoting: boolean;
+  /** 0-based identifiers of the correct answer options. */
+  correct_option_ids?: number[];
   /** Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters */
   explanation?: string;
   /** Special entities like usernames, URLs, bot commands, etc. that appear in the explanation */
@@ -1325,6 +1363,34 @@ export interface Poll {
   open_period?: number;
   /** Point in time (Unix timestamp) when the poll will be automatically closed */
   close_date?: number;
+  /** Description of the poll; for polls inside the Message object only */
+  description?: string;
+  /** Special entities that appear in the poll description */
+  description_entities?: MessageEntity[];
+}
+
+/** Describes a service message about an option added to a poll. */
+export interface PollOptionAdded {
+  /** Message containing the poll to which the option was added, if known */
+  poll_message?: MaybeInaccessibleMessage;
+  /** Unique identifier of the added option */
+  option_persistent_id: string;
+  /** Option text */
+  option_text: string;
+  /** Special entities that appear in the option text */
+  option_text_entities?: MessageEntity[];
+}
+
+/** Describes a service message about an option deleted from a poll. */
+export interface PollOptionDeleted {
+  /** Message containing the poll from which the option was deleted, if known */
+  poll_message?: MaybeInaccessibleMessage;
+  /** Unique identifier of the deleted option */
+  option_persistent_id: string;
+  /** Option text */
+  option_text: string;
+  /** Special entities that appear in the option text */
+  option_text_entities?: MessageEntity[];
 }
 
 export declare namespace Location {

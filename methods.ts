@@ -3,6 +3,8 @@ import type { InlineQueryResult, InlineQueryResultsButton } from "./inline.ts";
 import type {
   ForceReply,
   InlineKeyboardMarkup,
+  KeyboardButton,
+  PreparedKeyboardButton,
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
 } from "./markup.ts";
@@ -827,20 +829,34 @@ export type ApiMethods<F> = {
     is_anonymous?: boolean;
     /** Poll type, “quiz” or “regular”, defaults to “regular” */
     type?: "quiz" | "regular";
-    /** True, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to False */
+    /** True, if the poll allows multiple answers, defaults to False */
     allows_multiple_answers?: boolean;
-    /** 0-based identifier of the correct answer option, required for polls in quiz mode */
-    correct_option_id?: number;
+    /** Pass True if the poll allows changing chosen answer options */
+    allows_revoting?: boolean;
+    /** Pass True if the poll options must be shown in random order */
+    shuffle_options?: boolean;
+    /** Pass True if answer options can be added to the poll after creation */
+    allow_adding_options?: boolean;
+    /** Pass True if poll results must be shown only after the poll closes */
+    hide_results_until_closes?: boolean;
+    /** 0-based identifiers of the correct answer options, required for polls in quiz mode */
+    correct_option_ids?: number[];
     /** Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters with at most 2 line feeds after entities parsing */
     explanation?: string;
     /** Mode for parsing entities in the explanation. See formatting options for more details. */
     explanation_parse_mode?: ParseMode;
     /** A list of special entities that appear in the poll explanation. It can be specified instead of explanation_parse_mode */
     explanation_entities?: MessageEntity[];
-    /** Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with close_date. */
+    /** Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with close_date. */
     open_period?: number;
-    /** Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future. Can't be used together with open_period. */
+    /** Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 2628000 seconds in the future. Can't be used together with open_period. */
     close_date?: number;
+    /** Description of the poll */
+    description?: string;
+    /** Mode for parsing entities in the poll description */
+    description_parse_mode?: ParseMode;
+    /** Special entities that appear in the poll description */
+    description_entities?: MessageEntity[];
     /** Pass True if the poll needs to be immediately closed. This can be useful for poll preview. */
     is_closed?: boolean;
     /** Sends the message silently. Users will receive a notification with no sound. */
@@ -1098,6 +1114,16 @@ export type ApiMethods<F> = {
     user_id: number;
     /** New custom title for the administrator; 0-16 characters, emoji are not allowed */
     custom_title: string;
+  }): true;
+
+  /** Use this method to set a tag for a regular member in a group or a supergroup. */
+  setChatMemberTag(args: {
+    /** Unique identifier for the target chat or username of the target supergroup */
+    chat_id: number | string;
+    /** Unique identifier of the target user */
+    user_id: number;
+    /** New tag for the member; 0-16 characters, emoji are not allowed */
+    tag?: string;
   }): true;
 
   /** Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner of the banned chat won't be able to send messages on behalf of any of their channels. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns True on success. */
@@ -1449,6 +1475,18 @@ export type ApiMethods<F> = {
     /** Unique identifier of the business connection */
     business_connection_id?: string;
   }): BusinessConnection;
+
+  /** Use this method to get the token of a managed bot. Returns the token as String on success. */
+  getManagedBotToken(args: {
+    /** User identifier of the managed bot whose token will be returned */
+    user_id: number;
+  }): string;
+
+  /** Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success. */
+  replaceManagedBotToken(args: {
+    /** User identifier of the managed bot whose token will be replaced */
+    user_id: number;
+  }): string;
 
   /** Use this method to change the list of the bot's commands. See https://core.telegram.org/bots#commands for more details about bot commands. Returns True on success. */
   setMyCommands(args: {
@@ -1983,6 +2021,20 @@ export type ApiMethods<F> = {
     | (Update.Edited & Message.LocationMessage & Message.BusinessSentMessage)
     | true;
 
+  /** Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned. */
+  editMessageChecklist(args: {
+    /** Unique identifier of the business connection on behalf of which the message will be sent */
+    business_connection_id: string;
+    /** Unique identifier for the target chat */
+    chat_id: number;
+    /** Unique identifier for the target message */
+    message_id: number;
+    /** An object for the new checklist */
+    checklist: InputChecklist;
+    /** An object for the new inline keyboard for the message */
+    reply_markup?: InlineKeyboardMarkup;
+  }): Update.Edited & Message.ChecklistMessage & Message.BusinessSentMessage;
+
   /** Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
   editMessageReplyMarkup(args: {
     /** Unique identifier of the business connection on behalf of which the message to be edited was sent */
@@ -2286,6 +2338,14 @@ export type ApiMethods<F> = {
     /** Pass True if the message can be sent to channel chats */
     allow_channel_chats?: boolean;
   }): PreparedInlineMessage;
+
+  /** Stores a keyboard button that can be used by a user within a Mini App. */
+  savePreparedKeyboardButton(args: {
+    /** Unique identifier of the target user that can use the button */
+    user_id: number;
+    /** A keyboard button to be saved */
+    button: KeyboardButton;
+  }): PreparedKeyboardButton;
 
   /** Use this method to send invoices. On success, the sent Message is returned. */
   sendInvoice(args: {

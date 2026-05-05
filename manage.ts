@@ -47,6 +47,8 @@ export interface User {
   is_premium?: true;
   /** True, if this user added the bot to the attachment menu */
   added_to_attachment_menu?: true;
+  /** True, if this user can manage bots */
+  can_manage_bots?: true;
 }
 
 /** This object represents a Telegram user or bot that was returned by `getMe`. */
@@ -468,6 +470,8 @@ export interface ChatAdministratorRights {
   can_pin_messages: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
   can_manage_topics: boolean;
+  /** True, if the administrator can manage tags; for supergroups only */
+  can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages: boolean;
 }
@@ -547,6 +551,8 @@ export interface ChatMemberAdministrator extends AbstractChatMember {
 /** Represents a chat member that has no additional privileges or restrictions. */
 export interface ChatMemberMember extends AbstractChatMember {
   status: "member";
+  /** Tag of the member in the chat */
+  tag?: string;
   /** Date when the user's subscription will expire; Unix time */
   until_date?: number;
 }
@@ -554,6 +560,8 @@ export interface ChatMemberMember extends AbstractChatMember {
 /** Represents a chat member that is under certain restrictions in the chat. Supergroups only. */
 export interface ChatMemberRestricted extends AbstractChatMember {
   status: "restricted";
+  /** Tag of the member in the chat */
+  tag?: string;
   /** True, if the user is a member of the chat at the moment of the request */
   is_member: boolean;
   /** True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues */
@@ -584,6 +592,8 @@ export interface ChatMemberRestricted extends AbstractChatMember {
   can_pin_messages: boolean;
   /** True, if the user is allowed to create forum topics */
   can_manage_topics: boolean;
+  /** True, if the user is allowed to edit their tag */
+  can_edit_tag?: boolean;
   /** Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever */
   until_date: number;
 }
@@ -666,6 +676,22 @@ export interface ChatPermissions {
   can_pin_messages?: boolean;
   /** True, if the user is allowed to create forum topics. If omitted defaults to the value of can_pin_messages */
   can_manage_topics?: boolean;
+  /** True, if the user is allowed to edit their tag */
+  can_edit_tag?: boolean;
+}
+
+/** This object contains information about the bot that was created to be managed by the current bot. */
+export interface ManagedBotCreated {
+  /** Information about the bot */
+  bot: User;
+}
+
+/** This object contains information about the creation, token update, or owner update of a bot that is managed by the current bot. */
+export interface ManagedBotUpdated {
+  /** User that created the bot */
+  user: User;
+  /** Information about the bot */
+  bot: User;
 }
 
 /** Describes the birthdate of a user. */
