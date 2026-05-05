@@ -1102,7 +1102,7 @@ export type ApiMethods<F> = {
     can_pin_messages?: boolean;
     /** Pass True if the user is allowed to create, rename, close, and reopen forum topics; supergroups only */
     can_manage_topics?: boolean;
-    /** Pass True if the administrator can manage tags; for supergroups only */
+    /** Pass True if the administrator can edit the tags of regular members; for groups and supergroups only */
     can_manage_tags?: boolean;
     /** Pass True if the administrator can manage direct messages within the channel and decline suggested posts; for channels only */
     can_manage_direct_messages?: boolean;
@@ -1605,9 +1605,9 @@ export type ApiMethods<F> = {
     star_count: 1000 | 1500 | 2500;
     /** Text that will be shown along with the service message about the subscription; 0-128 characters */
     text?: string;
-    /** Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored. */
+    /** Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored. */
     text_parse_mode?: ParseMode;
-    /** A list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored. */
+    /** A list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored. */
     text_entities?: MessageEntity[];
   }): true;
 
@@ -2123,9 +2123,9 @@ export type ApiMethods<F> = {
     pay_for_upgrade?: boolean;
     /** Text that will be shown along with the gift; 0-255 characters */
     text?: string;
-    /** Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored. */
+    /** Mode for parsing entities in the text. See formatting options for more details. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored. */
     text_parse_mode?: ParseMode;
-    /** A list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored. */
+    /** A list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored. */
     text_entities?: MessageEntity[];
   }): true;
 
@@ -2345,8 +2345,11 @@ export type ApiMethods<F> = {
   savePreparedKeyboardButton(args: {
     /** Unique identifier of the target user that can use the button */
     user_id: number;
-    /** A keyboard button to be saved */
-    button: KeyboardButton;
+    /** A request_users, request_chat, or request_managed_bot keyboard button to be saved */
+    button:
+      | KeyboardButton.RequestUsers
+      | KeyboardButton.RequestChat
+      | KeyboardButton.RequestManagedBot;
   }): PreparedKeyboardButton;
 
   /** Use this method to send invoices. On success, the sent Message is returned. */

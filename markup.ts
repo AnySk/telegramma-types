@@ -188,7 +188,7 @@ export declare namespace KeyboardButton {
   }
   export interface RequestChatButton extends RequestChat {}
   export interface RequestManagedBot extends Common {
-    /** If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. */
+    /** If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. Available in private chats only. */
     request_managed_bot: KeyboardButtonRequestManagedBot;
   }
   export interface RequestManagedBotButton extends RequestManagedBot {}
@@ -214,7 +214,7 @@ export declare namespace KeyboardButton {
   export interface WebAppButton extends WebApp {}
 }
 
-/** This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_user, request_chat, request_contact, request_location, and request_poll are mutually exclusive. */
+/** This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The fields web_app, request_users, request_chat, request_managed_bot, request_contact, request_location, and request_poll are mutually exclusive. */
 export type KeyboardButton =
   | KeyboardButton.Common
   | KeyboardButton.RequestUsers

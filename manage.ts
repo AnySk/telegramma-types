@@ -47,8 +47,6 @@ export interface User {
   is_premium?: true;
   /** True, if this user added the bot to the attachment menu */
   added_to_attachment_menu?: true;
-  /** True, if this user can manage bots */
-  can_manage_bots?: true;
 }
 
 /** This object represents a Telegram user or bot that was returned by `getMe`. */
@@ -69,6 +67,8 @@ export interface UserFromGetMe extends User {
   has_topics_enabled?: boolean;
   /** True, if the bot allows users to create and delete topics in private chats. Returned only in getMe. */
   allows_users_to_create_topics?: boolean;
+  /** True, if other bots can be created to be controlled by the bot. Returned only in getMe. */
+  can_manage_bots?: boolean;
 }
 
 export declare namespace Chat {
@@ -470,7 +470,7 @@ export interface ChatAdministratorRights {
   can_pin_messages: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
   can_manage_topics: boolean;
-  /** True, if the administrator can manage tags; for supergroups only */
+  /** True, if the administrator can edit the tags of regular members; for groups and supergroups only */
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages: boolean;
@@ -542,7 +542,7 @@ export interface ChatMemberAdministrator extends AbstractChatMember {
   can_pin_messages: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
   can_manage_topics: boolean;
-  /** True, if the administrator can manage tags; for supergroups only */
+  /** True, if the administrator can edit the tags of regular members; for groups and supergroups only */
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages: boolean;

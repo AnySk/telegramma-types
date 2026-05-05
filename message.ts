@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-irregular-whitespace
 import type {
+  Chat,
   ChatOwnerChanged,
   ChatOwnerLeft,
-  Chat,
   DirectMessagesTopic,
   File,
   Gift,
@@ -718,6 +718,10 @@ export declare namespace MessageEntity {
   }
   export interface DateTime extends Abstract {
     type: "date_time";
+    /** Unix time associated with the entity */
+    unix_time?: number;
+    /** String that defines the formatting of the date and time */
+    date_time_format?: string;
   }
 }
 
@@ -748,7 +752,7 @@ export type MessageEntity =
 export interface TextQuote {
   /** Text of the quoted part of a message that is replied to by the given message */
   text: string;
-  /** Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are kept in quotes. */
+  /** Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are kept in quotes. */
   entities?: MessageEntity[];
   /** Approximate quote position in the original message in UTF-16 code units as specified by the sender */
   position: number;
@@ -901,7 +905,7 @@ export interface ReplyParameters {
   chat_id?: number | string;
   /** Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account. */
   allow_sending_without_reply?: boolean;
-  /** Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, and custom_emoji entities. The message will fail to send if the quote isn't found in the original message. */
+  /** Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message. */
   quote?: string;
   /** Mode for parsing entities in the quote. See formatting options for more details. */
   quote_parse_mode?: ParseMode;
