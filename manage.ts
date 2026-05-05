@@ -183,7 +183,7 @@ declare namespace ChatFullInfo {
     pinned_message?: Message;
     /** Information about types of gifts that are accepted by the chat or by the corresponding user for private chats */
     accepted_gift_types?: AcceptedGiftTypes[];
-    /** The number of Telegram Stars a general user have to pay to send a message to the chat */
+    /** The number of Telegram Stars a general user has to pay to send a message to the chat */
     paid_message_star_count?: number;
     /** The time after which all messages sent to the chat will be automatically deleted; in seconds */
     message_auto_delete_time?: number;
@@ -224,7 +224,7 @@ declare namespace ChatFullInfo {
     permissions?: ChatPermissions;
     /** Information about types of gifts that are accepted by the chat or by the corresponding user for private chats */
     accepted_gift_types?: AcceptedGiftTypes[];
-    /** The number of Telegram Stars a general user have to pay to send a message to the chat */
+    /** The number of Telegram Stars a general user has to pay to send a message to the chat */
     paid_message_star_count?: number;
     /** The time after which all messages sent to the chat will be automatically deleted; in seconds */
     message_auto_delete_time?: number;
@@ -273,7 +273,7 @@ declare namespace ChatFullInfo {
     permissions?: ChatPermissions;
     /** Information about types of gifts that are accepted by the chat or by the corresponding user for private chats */
     accepted_gift_types?: AcceptedGiftTypes[];
-    /** The number of Telegram Stars a general user have to pay to send a message to the chat */
+    /** The number of Telegram Stars a general user has to pay to send a message to the chat */
     paid_message_star_count?: number;
     /** True, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats. */
     can_send_paid_media?: true;
@@ -330,7 +330,7 @@ declare namespace ChatFullInfo {
     pinned_message?: Message;
     /** Information about types of gifts that are accepted by the chat or by the corresponding user for private chats */
     accepted_gift_types?: AcceptedGiftTypes[];
-    /** The number of Telegram Stars a general user have to pay to send a message to the chat */
+    /** The number of Telegram Stars a general user has to pay to send a message to the chat */
     paid_message_star_count?: number;
     /** True, if paid media messages can be sent or forwarded to the channel chat. The field is available only for channel chats. */
     can_send_paid_media?: true;
