@@ -69,6 +69,8 @@ export declare namespace Message {
     is_paid_post?: true;
     /** Signature of the post author for messages in channels, or the custom title of an anonymous group administrator */
     author_signature?: string;
+    /** Tag of the sender of the message in the chat */
+    sender_tag?: string;
     /** The number of Telegram Stars that were paid by the sender of the message to send it */
     paid_star_count?: number;
     /** Options used for link preview generation for the message, if it is a text message and link preview options were changed */

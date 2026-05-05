@@ -542,6 +542,8 @@ export interface ChatMemberAdministrator extends AbstractChatMember {
   can_pin_messages: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
   can_manage_topics: boolean;
+  /** True, if the administrator can manage tags; for supergroups only */
+  can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages: boolean;
   /** Custom title for this user */

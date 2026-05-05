@@ -1102,6 +1102,8 @@ export type ApiMethods<F> = {
     can_pin_messages?: boolean;
     /** Pass True if the user is allowed to create, rename, close, and reopen forum topics; supergroups only */
     can_manage_topics?: boolean;
+    /** Pass True if the administrator can manage tags; for supergroups only */
+    can_manage_tags?: boolean;
     /** Pass True if the administrator can manage direct messages within the channel and decline suggested posts; for channels only */
     can_manage_direct_messages?: boolean;
   }): true;
