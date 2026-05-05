@@ -595,7 +595,7 @@ export interface ChatMemberRestricted extends AbstractChatMember {
   /** True, if the user is allowed to create forum topics */
   can_manage_topics: boolean;
   /** True, if the user is allowed to edit their tag */
-  can_edit_tag?: boolean;
+  can_edit_tag: boolean;
   /** Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever */
   until_date: number;
 }
