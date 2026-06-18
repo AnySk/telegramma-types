@@ -10,7 +10,7 @@ import type {
 /** Describes the current status of a webhook. */
 export interface WebhookInfo {
   /** Webhook URL, may be empty if webhook is not set up */
-  url?: string;
+  url: string;
   /** True, if a custom certificate was provided for webhook certificate checks */
   has_custom_certificate: boolean;
   /** Number of updates awaiting delivery */
@@ -389,7 +389,7 @@ export interface DirectMessagesTopic {
   /** Unique identifier of the topic */
   topic_id: number;
   /** Information about the user that created the topic. Currently, it is always present */
-  user: User;
+  user?: User;
 }
 
 /** This object represent a user's profile pictures. */
@@ -471,17 +471,17 @@ export interface ChatAdministratorRights {
   /** True, if the administrator can delete stories posted by other users */
   can_delete_stories: boolean;
   /** True, if the administrator can post messages in the channel, approve suggested posts, or access channel statistics; for channels only */
-  can_post_messages: boolean;
+  can_post_messages?: boolean;
   /** True, if the administrator can edit messages of other users and can pin messages; for channels only */
-  can_edit_messages: boolean;
+  can_edit_messages?: boolean;
   /** True, if the user is allowed to pin messages; for groups and supergroups only */
-  can_pin_messages: boolean;
+  can_pin_messages?: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
-  can_manage_topics: boolean;
+  can_manage_topics?: boolean;
   /** True, if the administrator can edit the tags of regular members; for groups and supergroups only */
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
-  can_manage_direct_messages: boolean;
+  can_manage_direct_messages?: boolean;
 }
 
 /** This object contains information about one member of a chat. Currently, the following 6 types of chat members are supported:
@@ -543,17 +543,17 @@ export interface ChatMemberAdministrator extends AbstractChatMember {
   /** True, if the administrator can delete stories posted by other users */
   can_delete_stories: boolean;
   /** True, if the administrator can post messages in the channel, approve suggested posts, or access channel statistics; for channels only */
-  can_post_messages: boolean;
+  can_post_messages?: boolean;
   /** True, if the administrator can edit messages of other users and can pin messages; for channels only */
-  can_edit_messages: boolean;
+  can_edit_messages?: boolean;
   /** True, if the user is allowed to pin messages; for groups and supergroups only */
-  can_pin_messages: boolean;
+  can_pin_messages?: boolean;
   /** True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only */
-  can_manage_topics: boolean;
+  can_manage_topics?: boolean;
   /** True, if the administrator can edit the tags of regular members; for groups and supergroups only */
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
-  can_manage_direct_messages: boolean;
+  can_manage_direct_messages?: boolean;
   /** Custom title for this user */
   custom_title?: string;
 }
@@ -922,7 +922,7 @@ export interface BusinessBotRights {
   /** True, if the bot can mark incoming private messages as read */
   can_read_messages?: true;
   /** True, if the bot can delete messages sent by the bot */
-  can_delete_outgoing_messages?: true;
+  can_delete_sent_messages?: true;
   /** True, if the bot can delete all private messages in managed chats */
   can_delete_all_messages?: true;
   /** True, if the bot can edit the first and last name of the business account */

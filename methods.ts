@@ -313,6 +313,8 @@ export type ApiMethods<F> = {
     caption_entities?: MessageEntity[];
     /** Pass True, if the caption must be shown above the message media */
     show_caption_above_media?: true;
+    /** Pass True if the photo needs to be covered with a spoiler animation */
+    has_spoiler?: boolean;
     /** Sends the message silently. Users will receive a notification with no sound. */
     disable_notification?: boolean;
     /** Protects the contents of the sent message from forwarding and saving */
@@ -891,7 +893,7 @@ export type ApiMethods<F> = {
   /** Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned. */
   sendChecklist(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
-    business_connection_id?: string;
+    business_connection_id: string;
     /** Unique identifier for the target chat */
     chat_id: number | string;
     /** An object for the checklist to send */
@@ -953,7 +955,7 @@ export type ApiMethods<F> = {
     /** Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated */
     draft_id: number;
     /** Text of the message to be sent, 1-4096 characters after entities parsing */
-    text: string;
+    text?: string;
     /** Mode for parsing entities in the message text. See formatting options for more details. */
     parse_mode?: ParseMode;
     /** A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode */
@@ -1479,16 +1481,17 @@ export type ApiMethods<F> = {
   }): true;
 
   /** Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object. */
-  getUserChatBoosts(arg: {
+  getUserChatBoosts(args: {
     /** Unique identifier for the chat or username of the channel (in the format `@channelusername`) */
     chat_id: number | string;
     /** Unique identifier of the target user */
     user_id: number;
   }): UserChatBoosts;
 
+  /** Use this method to get information about the connection of the bot with a business account. Returns a BusinessConnection object on success. */
   getBusinessConnection(args: {
     /** Unique identifier of the business connection */
-    business_connection_id?: string;
+    business_connection_id: string;
   }): BusinessConnection;
 
   /** Use this method to get the token of a managed bot. Returns the token as String on success. */
@@ -2452,7 +2455,7 @@ export type ApiMethods<F> = {
     /** Price breakdown, a list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars. */
     prices: LabeledPrice[];
     /** The number of seconds the subscription will be active for before the next payment. The currency must be set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if specified. Any number of subscriptions can be active for a given bot at the same time, including multiple concurrent subscriptions from the same user. Subscription price must not exceed 2500 Telegram Stars. */
-    subscription_period: 2592000;
+    subscription_period?: 2592000;
     /** The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double). For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in currencies.json, it shows the number of digits past the decimal point for each currency (2 for the majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars. */
     max_tip_amount?: number;
     /** An array of suggested amounts of tips in the smallest units of the currency (integer, not float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed max_tip_amount. */
@@ -2558,6 +2561,10 @@ export type ApiMethods<F> = {
     disable_notification?: boolean;
     /** Protects the contents of the sent message from forwarding and saving */
     protect_content?: boolean;
+    /** Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+    allow_paid_broadcast?: boolean;
+    /** Unique identifier of the message effect to be added to the message; for private chats only */
+    message_effect_id?: string;
     /** Description of the message to reply to */
     reply_parameters?: ReplyParameters;
     /** An object for an inline keyboard. If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game. */

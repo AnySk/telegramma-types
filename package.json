@@ -1,7 +1,7 @@
 {
   "name": "@anysk/telegramma-types",
   "private": false,
-  "version": "10.1.0",
+  "version": "10.1.1",
   "description": "Type declarations for the Telegram API",
   "main": "index.js",
   "repository": {

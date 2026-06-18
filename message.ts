@@ -522,7 +522,7 @@ export type MaybeInaccessibleMessage =
 /** Describes an inline message sent by a Web App on behalf of a user. */
 export interface SentWebAppMessage {
   /** Identifier of the sent inline message. Available only if there is an inline keyboard attached to the message. */
-  inline_message_id: string;
+  inline_message_id?: string;
 }
 
 /** Describes an inline message to be sent by a user of a Mini App. */
@@ -1575,9 +1575,9 @@ export interface BackgroundTypeWallpaper {
   /** Dimming of the background in dark themes, as a percentage; 0-100 */
   dark_theme_dimming: number;
   /** True, if the wallpaper is downscaled to fit in a 450x450 square and then box-blurred with radius 12 */
-  is_blurred: boolean;
+  is_blurred?: boolean;
   /** True, if the background moves slightly when the device is tilted */
-  is_moving: boolean;
+  is_moving?: boolean;
 }
 
 /** The background is a .PNG or .TGV (gzipped subset of SVG with MIME type “application/x-tgwallpattern”) pattern to be combined with the background fill chosen by the user. */
@@ -1591,9 +1591,9 @@ export interface BackgroundTypePattern {
   /** Intensity of the pattern when it is shown above the filled background; 0-100 */
   intensity: number;
   /** True, if the background fill must be applied only to the pattern itself. All other pixels are black in this case. For dark themes only */
-  is_inverted: boolean;
+  is_inverted?: boolean;
   /** True, if the background moves slightly when the device is tilted */
-  is_moving: boolean;
+  is_moving?: boolean;
 }
 
 /** The background is taken directly from a built-in chat theme. */
@@ -1832,7 +1832,7 @@ export interface DirectMessagePriceChanged {
   /** True, if direct messages are enabled for the channel chat; false otherwise */
   are_direct_messages_enabled: boolean;
   /** The new number of Telegram Stars that must be paid by users for each direct message sent to the channel. Does not apply to users who have been exempted by administrators. Defaults to 0. */
-  direct_message_star_count: number;
+  direct_message_star_count?: number;
 }
 
 /** Describes a service message about the approval of a suggested post. */
@@ -1850,7 +1850,7 @@ export interface SuggestedPostApprovalFailed {
   /** Message containing the suggested post whose approval has failed. Note that the Message object in this field will not contain the reply_to_message field even if it itself is a reply. */
   suggested_post_message?: Message;
   /** Expected price of the post */
-  price?: SuggestedPostPrice;
+  price: SuggestedPostPrice;
 }
 
 /** Describes a service message about the rejection of a suggested post. */
@@ -1889,6 +1889,8 @@ export interface GiveawayCompleted {
   unclaimed_prize_count?: number;
   /** Message with the giveaway that was completed, if it wasn't deleted */
   giveaway_message?: Message;
+  /** True, if the giveaway is a Telegram Star giveaway. Otherwise, currently, the giveaway is a Telegram Premium giveaway. */
+  is_star_giveaway?: true;
 }
 /** Describes the options used for link preview generation. */
 export interface LinkPreviewOptions {
@@ -1940,6 +1942,8 @@ export interface Sticker {
   mask_position?: MaskPosition;
   /** For custom emoji stickers, unique identifier of the custom emoji */
   custom_emoji_id?: string;
+  /** True, if the sticker must be repainted to a text color in messages, the color of the Telegram Premium badge in emoji status, white color on chat photos, or another appropriate color in other places */
+  needs_repainting?: true;
   /** File size in bytes */
   file_size?: number;
 }
@@ -1979,11 +1983,11 @@ export interface Game {
   /** Photo that will be displayed in the game message in chats. */
   photo: PhotoSize[];
   /** Brief description of the game or high scores included in the game message. Can be automatically edited to include current high scores for the game when the bot calls setGameScore, or manually edited using editMessageText. 0-4096 characters. */
-  text: string;
+  text?: string;
   /** Special entities that appear in text, such as usernames, URLs, bot commands, etc. */
-  text_entities: MessageEntity[];
+  text_entities?: MessageEntity[];
   /** Animation that will be displayed in the game message in chats. Upload via BotFather */
-  animation: Animation;
+  animation?: Animation;
 }
 
 /** This object represents one row of the high scores table for a game. */
@@ -2607,4 +2611,3 @@ export interface RichTextUrl {
   /** URL of the link */
   url: string;
 }
-
