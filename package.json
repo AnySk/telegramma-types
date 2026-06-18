@@ -1,12 +1,12 @@
 {
-  "name": "@telegraf/types",
+  "name": "@anysk/telegramma-types",
   "private": false,
-  "version": "9.6.0",
+  "version": "10.1.0",
   "description": "Type declarations for the Telegram API",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/telegraf/types.git"
+    "url": "git@github.com:AnySk/telegramma-types.git"
   },
   "keywords": [
     "telegram",

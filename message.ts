@@ -14,6 +14,7 @@ import type {
   User,
 } from "./manage.ts";
 import type { InlineKeyboardMarkup } from "./markup.ts";
+import type { InputPollOptionMedia } from "./methods.ts";
 import type { PassportData } from "./passport.ts";
 import type { Invoice, RefundedPayment, SuccessfulPayment } from "./payment.ts";
 
@@ -79,6 +80,12 @@ export declare namespace Message {
     suggested_post_info?: SuggestedPostInfo;
     /** Unique identifier of the message effect added to the message */
     effect_id?: string;
+    /** The unique identifier for the guest query. Use this identifier with the method answerGuestQuery to reply to the query. */
+    guest_query_id?: string;
+    /** For a message sent by a guest bot, this is the user whose original message triggered the guest query */
+    guest_bot_caller_user?: User;
+    /** For a message sent by a guest bot, this is the chat whose original message triggered the guest query */
+    guest_bot_caller_chat?: Chat;
     /** Inline keyboard attached to the message. login_url buttons are represented as ordinary url buttons. */
     reply_markup?: InlineKeyboardMarkup;
   }
@@ -151,6 +158,16 @@ export declare namespace Message {
   export interface VoiceMessage extends CaptionableMessage {
     /** Message is a voice message, information about the file */
     voice: Voice;
+  }
+  export interface LivePhotoMessage extends MediaMessage {
+    /** Message is a live photo, information about the live photo. For backward compatibility, when this field is set, the video and document fields will also be set */
+    live_photo: LivePhoto;
+    /** True, if the caption must be shown above the message media */
+    show_caption_above_media?: true;
+  }
+  export interface RichMessageMessage extends CommonMessage {
+    /** Message is a rich formatted message */
+    rich_message: RichMessage;
   }
   export interface ChecklistMessage extends CommonMessage {
     /** Message is a checklist */
@@ -457,9 +474,11 @@ export type CommonMessageBundle =
   | Message.DiceMessage
   | Message.DocumentMessage
   | Message.GameMessage
+  | Message.LivePhotoMessage
   | Message.LocationMessage
   | Message.PhotoMessage
   | Message.PollMessage
+  | Message.RichMessageMessage
   | Message.StickerMessage
   | Message.StoryMessage
   | Message.TextMessage
@@ -821,6 +840,12 @@ export interface ExternalReplyVideo
   video: Video;
 }
 
+export interface ExternalReplyLivePhoto
+  extends AbstractExternalReply, AbstractExternalReplyMedia {
+  /** Message is a live photo, information about the live photo */
+  live_photo: LivePhoto;
+}
+
 export interface ExternalReplyVideoNote extends AbstractExternalReply {
   /** Message is a video note, information about the video message */
   video_note: VideoNote;
@@ -885,6 +910,7 @@ export type ExternalReplyInfo =
   | ExternalReplySticker
   | ExternalReplyStory
   | ExternalReplyVideo
+  | ExternalReplyLivePhoto
   | ExternalReplyVideoNote
   | ExternalReplyVoice
   | ExternalReplyContact
@@ -1165,6 +1191,14 @@ declare namespace PaidMedia {
     /** The video */
     video: Video;
   }
+
+  /** The paid media is a live photo. */
+  export interface PaidMediaLivePhoto {
+    /** Type of the paid media, always “live_photo” */
+    type: "live_photo";
+    /** The photo */
+    live_photo: LivePhoto;
+  }
 }
 
 /** This object describes paid media. Currently, it can be one of
@@ -1172,11 +1206,13 @@ declare namespace PaidMedia {
 - PaidMediaPreview
 - PaidMediaPhoto
 - PaidMediaVideo
+- PaidMediaLivePhoto
  */
 export type PaidMedia =
   | PaidMedia.PaidMediaPreview
   | PaidMedia.PaidMediaPhoto
-  | PaidMedia.PaidMediaVideo;
+  | PaidMedia.PaidMediaVideo
+  | PaidMedia.PaidMediaLivePhoto;
 
 /** Describes a task in a checklist. */
 export interface ChecklistTask {
@@ -1308,16 +1344,20 @@ export interface PollOption {
   added_by_chat?: Chat;
   /** Point in time when the option was added */
   addition_date?: number;
+  /** Media added to the poll option */
+  media?: PollMedia;
 }
 
 /** This object contains information about one answer option in a poll to be sent. */
-export interface InputPollOption {
+export interface InputPollOption<F> {
   /** Option text, 1-100 characters */
   text: string;
   /** Mode for parsing entities in the text. See formatting options for more details. Currently, only custom emoji entities are allowed */
   text_parse_mode?: ParseMode;
   /** A list of special entities that appear in the poll option text. It can be specified instead of text_parse_mode */
   text_entities?: MessageEntity.CustomEmoji[];
+  /** Media to be added to the poll option */
+  media?: InputPollOptionMedia<F>;
 }
 
 /** This object represents an answer of a user in a non-anonymous poll. */
@@ -1373,6 +1413,14 @@ export interface Poll {
   description?: string;
   /** Special entities that appear in the poll description */
   description_entities?: MessageEntity[];
+  /** Media added to the poll description; for polls inside the Message object only */
+  media?: PollMedia;
+  /** Media added to the quiz explanation */
+  explanation_media?: PollMedia;
+  /** True if voting is limited to users who have been members of the chat where the poll was originally sent for more than 24 hours */
+  members_only: boolean;
+  /** A list of two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users can vote in the poll. The country code "FT" is used for users with anonymous numbers. If omitted, then users from any country can participate in the poll. */
+  country_codes?: string[];
 }
 
 /** Describes a service message about an option added to a poll. */
@@ -1947,3 +1995,616 @@ export interface GameHighScore {
   /** Score */
   score: number;
 }
+
+/** Describes an inline message sent by a guest bot. */
+export interface SentGuestMessage {
+  /** Identifier of the sent inline message */
+  inline_message_id: string;
+}
+
+/** This object represents a live photo. */
+export interface LivePhoto {
+  /** Available sizes of the corresponding static photo */
+  photo?: PhotoSize[];
+  /** Identifier for the video file which can be used to download or reuse the file */
+  file_id: string;
+  /** Unique identifier for the video file which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file. */
+  file_unique_id: string;
+  /** Video width as defined by the sender */
+  width: number;
+  /** Video height as defined by the sender */
+  height: number;
+  /** Duration of the video in seconds as defined by the sender */
+  duration: number;
+  /** MIME type of the file as defined by the sender */
+  mime_type?: string;
+  /** File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value. */
+  file_size?: number;
+}
+
+/** At most one of the optional fields can be present in any given object. */
+export interface PollMedia {
+  /** Media is an animation, information about the animation */
+  animation?: Animation;
+  /** Media is an audio file, information about the file; currently, can't be received in a poll option */
+  audio?: Audio;
+  /** Media is a general file, information about the file; currently, can't be received in a poll option */
+  document?: Document;
+  /** The HTTP link attached to the poll option */
+  link?: Link;
+  /** Media is a live photo, information about the live photo */
+  live_photo?: LivePhoto;
+  /** Media is a shared location, information about the location */
+  location?: Location;
+  /** Media is a photo, available sizes of the photo */
+  photo?: PhotoSize[];
+  /** Media is a sticker, information about the sticker; currently, for poll options only */
+  sticker?: Sticker;
+  /** Media is a venue, information about the venue */
+  venue?: Venue;
+  /** Media is a video, information about the video */
+  video?: Video;
+}
+
+/** Represents an HTTP link. */
+export interface Link {
+  /** URL of the link */
+  url: string;
+}
+
+/** Describes a rich message to be sent. Exactly one of the fields html or markdown must be used. */
+export interface InputRichMessage {
+  /** Content of the rich message to send described using HTML formatting. See rich message formatting options for more details. */
+  html?: string;
+  /** Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details. */
+  markdown?: string;
+  /** Pass True if the rich message must be shown right-to-left */
+  is_rtl?: boolean;
+  /** Pass True to skip automatic detection of entities (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text */
+  skip_entity_detection?: boolean;
+}
+
+/** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
+export type RichText =
+  | string
+  | RichText[]
+  | RichTextBold
+  | RichTextItalic
+  | RichTextUnderline
+  | RichTextStrikethrough
+  | RichTextSpoiler
+  | RichTextDateTime
+  | RichTextTextMention
+  | RichTextSubscript
+  | RichTextSuperscript
+  | RichTextMarked
+  | RichTextCode
+  | RichTextCustomEmoji
+  | RichTextMathematicalExpression
+  | RichTextUrl
+  | RichTextEmailAddress
+  | RichTextPhoneNumber
+  | RichTextBankCardNumber
+  | RichTextMention
+  | RichTextHashtag
+  | RichTextCashtag
+  | RichTextBotCommand
+  | RichTextAnchor
+  | RichTextAnchorLink
+  | RichTextReference
+  | RichTextReferenceLink;
+
+/** This object represents a block in a rich formatted message. Currently, it can be any of the following types: - RichBlockParagraph - RichBlockSectionHeading - RichBlockPreformatted - RichBlockFooter - RichBlockDivider - RichBlockMathematicalExpression - RichBlockAnchor - RichBlockList - RichBlockBlockQuotation - RichBlockPullQuotation - RichBlockCollage - RichBlockSlideshow - RichBlockTable - RichBlockDetails - RichBlockMap - RichBlockAnimation - RichBlockAudio - RichBlockPhoto - RichBlockVideo - RichBlockVoiceNote - RichBlockThinking */
+export type RichBlock =
+  | RichBlockParagraph
+  | RichBlockSectionHeading
+  | RichBlockPreformatted
+  | RichBlockFooter
+  | RichBlockDivider
+  | RichBlockMathematicalExpression
+  | RichBlockAnchor
+  | RichBlockList
+  | RichBlockBlockQuotation
+  | RichBlockPullQuotation
+  | RichBlockCollage
+  | RichBlockSlideshow
+  | RichBlockTable
+  | RichBlockDetails
+  | RichBlockMap
+  | RichBlockAnimation
+  | RichBlockAudio
+  | RichBlockPhoto
+  | RichBlockVideo
+  | RichBlockVoiceNote
+  | RichBlockThinking;
+
+/** Rich formatted message. */
+export interface RichMessage {
+  /** Content of the message */
+  blocks: RichBlock[];
+  /** True, if the rich message must be shown right-to-left */
+  is_rtl?: boolean;
+}
+
+/** A block with an anchor, corresponding to the HTML tag <a> with the attribute name. */
+export interface RichBlockAnchor {
+  /** Type of the block, always "anchor" */
+  type: "anchor";
+  /** The name of the anchor */
+  name: string;
+}
+
+/** A block with an animation, corresponding to the HTML tag <video>. */
+export interface RichBlockAnimation {
+  /** Type of the block, always "animation" */
+  type: "animation";
+  /** The animation */
+  animation: Animation;
+  /** True, if the media preview is covered by a spoiler animation */
+  has_spoiler?: boolean;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a music file, corresponding to the HTML tag <audio>. */
+export interface RichBlockAudio {
+  /** Type of the block, always "audio" */
+  type: "audio";
+  /** The audio */
+  audio: Audio;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block quotation, corresponding to the HTML tag <blockquote>. */
+export interface RichBlockBlockQuotation {
+  /** Type of the block, always "blockquote" */
+  type: "blockquote";
+  /** Content of the block */
+  blocks: RichBlock[];
+  /** Credit of the block */
+  credit?: RichText;
+}
+
+/** Caption of a rich formatted block. */
+export interface RichBlockCaption {
+  /** Block caption */
+  text: RichText;
+  /** Block credit which corresponds to the HTML tag <cite> */
+  credit?: RichText;
+}
+
+/** A collage, corresponding to the custom HTML tag <tg-collage>. */
+export interface RichBlockCollage {
+  /** Type of the block, always "collage" */
+  type: "collage";
+  /** Elements of the collage */
+  blocks: RichBlock[];
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** An expandable block for details disclosure, corresponding to the HTML tag <details>. */
+export interface RichBlockDetails {
+  /** Type of the block, always "details" */
+  type: "details";
+  /** Always shown summary of the block */
+  summary: RichText;
+  /** Content of the block */
+  blocks: RichBlock[];
+  /** True, if the content of the block is visible by default */
+  is_open?: boolean;
+}
+
+/** A divider, corresponding to the HTML tag <hr/>. */
+export interface RichBlockDivider {
+  /** Type of the block, always "divider" */
+  type: "divider";
+}
+
+/** A footer, corresponding to the HTML tag <footer>. */
+export interface RichBlockFooter {
+  /** Type of the block, always "footer" */
+  type: "footer";
+  /** Text of the block */
+  text: RichText;
+}
+
+/** A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>. */
+export interface RichBlockList {
+  /** Type of the block, always "list" */
+  type: "list";
+  /** Items of the list */
+  items: RichBlockListItem[];
+}
+
+/** An item of a list. */
+export interface RichBlockListItem {
+  /** Label of the item */
+  label: string;
+  /** The content of the item */
+  blocks: RichBlock[];
+  /** True, if the item has a checkbox */
+  has_checkbox?: boolean;
+  /** True, if the item has a checked checkbox */
+  is_checked?: boolean;
+  /** For ordered lists, the numeric value of the item label */
+  value?: number;
+  /** For ordered lists, the type of the item label; must be one of "a" for lowercase letters, "A" for uppercase letters, "i" for lowercase Roman numerals, "I" for uppercase Roman numerals, or "1" for decimal numbers */
+  type?: "a" | "A" | "i" | "I" | "1";
+}
+
+/** A block with a map, corresponding to the custom HTML tag <tg-map>. */
+export interface RichBlockMap {
+  /** Type of the block, always "map" */
+  type: "map";
+  /** Location of the center of the map */
+  location: Location;
+  /** Map zoom level; 13-20 */
+  zoom: number;
+  /** Expected width of the map */
+  width: number;
+  /** Expected height of the map */
+  height: number;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <tg-math-block>. */
+export interface RichBlockMathematicalExpression {
+  /** Type of the block, always "mathematical_expression" */
+  type: "mathematical_expression";
+  /** The mathematical expression in LaTeX format */
+  expression: string;
+}
+
+/** A text paragraph, corresponding to the HTML tag <p>. */
+export interface RichBlockParagraph {
+  /** Type of the block, always "paragraph" */
+  type: "paragraph";
+  /** Text of the block */
+  text: RichText;
+}
+
+/** A block with a photo, corresponding to the HTML tag <photo>. */
+export interface RichBlockPhoto {
+  /** Type of the block, always "photo" */
+  type: "photo";
+  /** Available sizes of the photo */
+  photo: PhotoSize[];
+  /** True, if the media preview is covered by a spoiler animation */
+  has_spoiler?: boolean;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A preformatted text block, corresponding to the nested HTML tags <pre> and <code>. */
+export interface RichBlockPreformatted {
+  /** Type of the block, always "pre" */
+  type: "pre";
+  /** Text of the block */
+  text: RichText;
+  /** The programming language of the text */
+  language?: string;
+}
+
+/** A quotation with centered text, loosely corresponding to the HTML tag <aside>. */
+export interface RichBlockPullQuotation {
+  /** Type of the block, always "pullquote" */
+  type: "pullquote";
+  /** Text of the block */
+  text: RichText;
+  /** Credit of the block */
+  credit?: RichText;
+}
+
+/** A section heading, corresponding to the HTML tags <h1>, <h2>, <h3>, <h4>, <h5>, or <h6>. */
+export interface RichBlockSectionHeading {
+  /** Type of the block, always "heading" */
+  type: "heading";
+  /** Text of the block */
+  text: RichText;
+  /** Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest */
+  size: number;
+}
+
+/** A slideshow, corresponding to the custom HTML tag <tg-slideshow>. */
+export interface RichBlockSlideshow {
+  /** Type of the block, always "slideshow" */
+  type: "slideshow";
+  /** Elements of the slideshow */
+  blocks: RichBlock[];
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A table, corresponding to the HTML tag <table>. */
+export interface RichBlockTable {
+  /** Type of the block, always "table" */
+  type: "table";
+  /** Cells of the table */
+  cells: RichBlockTableCell[][];
+  /** True, if the table has borders */
+  is_bordered?: boolean;
+  /** True, if the table is striped */
+  is_striped?: boolean;
+  /** Caption of the table */
+  caption?: RichText;
+}
+
+/** Cell in a table. */
+export interface RichBlockTableCell {
+  /** Text in the cell. If omitted, then the cell is invisible. */
+  text?: RichText;
+  /** True, if the cell is a header cell */
+  is_header?: boolean;
+  /** The number of columns the cell spans if it is bigger than 1 */
+  colspan?: number;
+  /** The number of rows the cell spans if it is bigger than 1 */
+  rowspan?: number;
+  /** Horizontal cell content alignment. Currently, must be one of "left", "center", or "right". */
+  align: "left" | "center" | "right";
+  /** Vertical cell content alignment. Currently, must be one of "top", "middle", or "bottom". */
+  valign: "top" | "middle" | "bottom";
+}
+
+/** A block with a "Thinking..." placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block. */
+export interface RichBlockThinking {
+  /** Type of the block, always "thinking" */
+  type: "thinking";
+  /** Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block. */
+  text: RichText;
+}
+
+/** A block with a video, corresponding to the HTML tag <video>. */
+export interface RichBlockVideo {
+  /** Type of the block, always "video" */
+  type: "video";
+  /** The video */
+  video: Video;
+  /** True, if the media preview is covered by a spoiler animation */
+  has_spoiler?: boolean;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a voice note, corresponding to the HTML tag <audio>. */
+export interface RichBlockVoiceNote {
+  /** Type of the block, always "voice_note" */
+  type: "voice_note";
+  /** The voice note */
+  voice_note: Voice;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** An anchor. */
+export interface RichTextAnchor {
+  /** Type of the rich text, always "anchor" */
+  type: "anchor";
+  /** The name of the anchor */
+  name: string;
+}
+
+/** A link to an anchor. */
+export interface RichTextAnchorLink {
+  /** Type of the rich text, always "anchor_link" */
+  type: "anchor_link";
+  /** The link text */
+  text: RichText;
+  /** The name of the anchor. If the name is empty, then the link brings back to the top of the message. */
+  anchor_name: string;
+}
+
+/** A text with a bank card number. */
+export interface RichTextBankCardNumber {
+  /** Type of the rich text, always "bank_card_number" */
+  type: "bank_card_number";
+  /** The text */
+  text: RichText;
+  /** The bank card number */
+  bank_card_number: string;
+}
+
+/** A bold text. */
+export interface RichTextBold {
+  /** Type of the rich text, always "bold" */
+  type: "bold";
+  /** The text */
+  text: RichText;
+}
+
+/** A bot command. */
+export interface RichTextBotCommand {
+  /** Type of the rich text, always "bot_command" */
+  type: "bot_command";
+  /** The text */
+  text: RichText;
+  /** The bot command */
+  bot_command: string;
+}
+
+/** A cashtag. */
+export interface RichTextCashtag {
+  /** Type of the rich text, always "cashtag" */
+  type: "cashtag";
+  /** The text */
+  text: RichText;
+  /** The cashtag */
+  cashtag: string;
+}
+
+/** A monowidth text. */
+export interface RichTextCode {
+  /** Type of the rich text, always "code" */
+  type: "code";
+  /** The text */
+  text: RichText;
+}
+
+/** A custom emoji. */
+export interface RichTextCustomEmoji {
+  /** Type of the rich text, always "custom_emoji" */
+  type: "custom_emoji";
+  /** Unique identifier of the custom emoji. Use getCustomEmojiStickers to get full information about the sticker. */
+  custom_emoji_id: string;
+  /** Alternative emoji for the custom emoji */
+  alternative_text: string;
+}
+
+/** Formatted date and time. */
+export interface RichTextDateTime {
+  /** Type of the rich text, always "date_time" */
+  type: "date_time";
+  /** The text */
+  text: RichText;
+  /** The Unix time associated with the entity */
+  unix_time: number;
+  /** The string that defines the formatting of the date and time. See date-time entity formatting for more details. */
+  date_time_format: string;
+}
+
+/** A text with an email address. */
+export interface RichTextEmailAddress {
+  /** Type of the rich text, always "email_address" */
+  type: "email_address";
+  /** The text */
+  text: RichText;
+  /** The email address */
+  email_address: string;
+}
+
+/** A hashtag. */
+export interface RichTextHashtag {
+  /** Type of the rich text, always "hashtag" */
+  type: "hashtag";
+  /** The text */
+  text: RichText;
+  /** The hashtag */
+  hashtag: string;
+}
+
+/** An italicized text. */
+export interface RichTextItalic {
+  /** Type of the rich text, always "italic" */
+  type: "italic";
+  /** The text */
+  text: RichText;
+}
+
+/** A marked text. */
+export interface RichTextMarked {
+  /** Type of the rich text, always "marked" */
+  type: "marked";
+  /** The text */
+  text: RichText;
+}
+
+/** A mathematical expression. */
+export interface RichTextMathematicalExpression {
+  /** Type of the rich text, always "mathematical_expression" */
+  type: "mathematical_expression";
+  /** The expression in LaTeX format */
+  expression: string;
+}
+
+/** A mention by a username. */
+export interface RichTextMention {
+  /** Type of the rich text, always "mention" */
+  type: "mention";
+  /** The text */
+  text: RichText;
+  /** The username */
+  username: string;
+}
+
+/** A text with a phone number. */
+export interface RichTextPhoneNumber {
+  /** Type of the rich text, always "phone_number" */
+  type: "phone_number";
+  /** The text */
+  text: RichText;
+  /** The phone number */
+  phone_number: string;
+}
+
+/** A reference. */
+export interface RichTextReference {
+  /** Type of the rich text, always "reference" */
+  type: "reference";
+  /** Text of the reference */
+  text: RichText;
+  /** The name of the reference */
+  name: string;
+}
+
+/** A link to a reference. */
+export interface RichTextReferenceLink {
+  /** Type of the rich text, always "reference_link" */
+  type: "reference_link";
+  /** The link text */
+  text: RichText;
+  /** The name of the reference */
+  reference_name: string;
+}
+
+/** A text covered by a spoiler. */
+export interface RichTextSpoiler {
+  /** Type of the rich text, always "spoiler" */
+  type: "spoiler";
+  /** The text */
+  text: RichText;
+}
+
+/** A strikethrough text. */
+export interface RichTextStrikethrough {
+  /** Type of the rich text, always "strikethrough" */
+  type: "strikethrough";
+  /** The text */
+  text: RichText;
+}
+
+/** A subscript text. */
+export interface RichTextSubscript {
+  /** Type of the rich text, always "subscript" */
+  type: "subscript";
+  /** The text */
+  text: RichText;
+}
+
+/** A superscript text. */
+export interface RichTextSuperscript {
+  /** Type of the rich text, always "superscript" */
+  type: "superscript";
+  /** The text */
+  text: RichText;
+}
+
+/** A mention of a Telegram user by their identifier. */
+export interface RichTextTextMention {
+  /** Type of the rich text, always "text_mention" */
+  type: "text_mention";
+  /** The text */
+  text: RichText;
+  /** The mentioned user */
+  user: User;
+}
+
+/** An underlined text. */
+export interface RichTextUnderline {
+  /** Type of the rich text, always "underline" */
+  type: "underline";
+  /** The text */
+  text: RichText;
+}
+
+/** A text with a link. */
+export interface RichTextUrl {
+  /** Type of the rich text, always "url" */
+  type: "url";
+  /** The text */
+  text: RichText;
+  /** URL of the link */
+  url: string;
+}
+

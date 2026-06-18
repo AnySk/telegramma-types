@@ -1,6 +1,7 @@
 import type { Chat, User } from "./manage.ts";
 import type { InlineKeyboardMarkup, WebAppInfo } from "./markup.ts";
 import type {
+  InputRichMessage,
   LinkPreviewOptions,
   Location,
   MessageEntity,
@@ -597,19 +598,27 @@ export interface InlineQueryResultCachedAudio {
   input_message_content?: InputMessageContent;
 }
 
-/** This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 5 types:
+/** This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 6 types:
 
 - InputTextMessageContent
+- InputRichMessageContent
 - InputLocationMessageContent
 - InputVenueMessageContent
 - InputContactMessageContent
 - InputInvoiceMessageContent */
 export type InputMessageContent =
   | InputTextMessageContent
+  | InputRichMessageContent
   | InputLocationMessageContent
   | InputVenueMessageContent
   | InputContactMessageContent
   | InputInvoiceMessageContent;
+
+/** Represents the content of a rich message to be sent as the result of an inline query. */
+export interface InputRichMessageContent {
+  /** The message to be sent */
+  rich_message: InputRichMessage;
+}
 
 /** Represents the content of a text message to be sent as the result of an inline query. */
 export interface InputTextMessageContent {

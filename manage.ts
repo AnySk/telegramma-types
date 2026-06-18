@@ -69,6 +69,10 @@ export interface UserFromGetMe extends User {
   allows_users_to_create_topics?: boolean;
   /** True, if other bots can be created to be controlled by the bot. Returned only in getMe. */
   can_manage_bots?: boolean;
+  /** True, if the bot supports guest queries from chats it is not a member of. Returned only in getMe. */
+  supports_guest_queries?: boolean;
+  /** True, if the bot supports join request queries and can be assigned to process them. Returned only in getMe. */
+  supports_join_request_queries?: boolean;
 }
 
 export declare namespace Chat {
@@ -263,6 +267,8 @@ declare namespace ChatFullInfo {
     join_to_send_messages?: true;
     /** True, if all users directly joining the supergroup need to be approved by supergroup administrators */
     join_by_request?: true;
+    /** The bot that processes join request queries in the chat. The field is only available to chat administrators. */
+    guard_bot?: User;
     /** Description, for groups, supergroups and channel chats */
     description?: string;
     /** Primary invite link, for groups, supergroups and channel chats */
@@ -340,6 +346,8 @@ declare namespace ChatFullInfo {
     has_protected_content?: true;
     /** Unique identifier for the linked chat, i.e. the discussion group identifier for a channel and vice versa; for supergroups and channel chats. This identifier may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */
     linked_chat_id?: number;
+    /** The bot that processes join request queries in the chat. The field is only available to chat administrators. */
+    guard_bot?: User;
   }
 }
 
@@ -584,6 +592,8 @@ export interface ChatMemberRestricted extends AbstractChatMember {
   can_send_polls: boolean;
   /** True, if the user is allowed to send animations, games, stickers and use inline bots */
   can_send_other_messages: boolean;
+  /** True, if the user is allowed to react to messages */
+  can_react_to_messages: boolean;
   /** True, if the user is allowed to add web page previews to their messages */
   can_add_web_page_previews: boolean;
   /** True, if the user is allowed to change the chat title, photo and other settings */
@@ -646,6 +656,8 @@ export interface ChatJoinRequest {
   bio?: string;
   /** Chat invite link that was used by the user to send the join request */
   invite_link?: ChatInviteLink;
+  /** Identifier of the join request query. If present, then the bot must call sendChatJoinRequestWebApp or directly call answerChatJoinRequestQuery within 10 seconds. */
+  query_id?: string;
 }
 
 /** Describes actions that a non-administrator user is allowed to take in a chat. */
@@ -668,6 +680,8 @@ export interface ChatPermissions {
   can_send_polls?: boolean;
   /** True, if the user is allowed to send animations, games, stickers and use inline bots */
   can_send_other_messages?: boolean;
+  /** True, if the user is allowed to react to messages. If omitted, defaults to the value of can_send_messages. */
+  can_react_to_messages?: boolean;
   /** True, if the user is allowed to add web page previews to their messages */
   can_add_web_page_previews?: boolean;
   /** True, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups */
@@ -1369,4 +1383,12 @@ export interface StarAmount {
   amount: number;
   /** Optional. The number of 1/1000000000 shares of Telegram Stars; from -999999999 to 999999999; can be negative if and only if amount is non-positive */
   nanostar_amount?: number;
+}
+
+/** This object describes the access settings of a bot. */
+export interface BotAccessSettings {
+  /** True, if only selected users can access the bot. The bot's owner can always access it. */
+  is_access_restricted: boolean;
+  /** The list of other users who have access to the bot if the access is restricted */
+  added_users?: User[];
 }

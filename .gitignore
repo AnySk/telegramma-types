@@ -2,3 +2,6 @@ node_modules
 
 # Build output
 *.d.ts
+
+# npm pack artifacts
+*.tgz

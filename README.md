@@ -1,6 +1,8 @@
 # Types for the Telegram Bot API
 
-[![Bot API Version](https://img.shields.io/badge/Bot%20API-v9.6-f36caf.svg?style=flat-square&logo=Telegram&labelColor=white&color=blue)](https://core.telegram.org/bots/api) [![NPM version](https://img.shields.io/npm/v/@telegraf/types?style=flat-square&logo=npm&labelColor=fff&color=c53635)](https://npmjs.com/package/@telegraf/types)
+[![Bot API Version](https://img.shields.io/badge/Bot%20API-v10.1-f36caf.svg?style=flat-square&logo=Telegram&labelColor=white&color=blue)](https://core.telegram.org/bots/api) [![NPM version](https://img.shields.io/npm/v/@anysk/telegramma-types?style=flat-square&logo=npm&labelColor=fff&color=c53635)](https://npmjs.com/package/@anysk/telegramma-types)
+
+> **Fork notice.** This is a fork of [`@telegraf/types`](https://github.com/telegraf/types), published as **`@anysk/telegramma-types`** and kept up to date with the latest **Telegram Bot API (v10.1)**. The public API is unchanged, so it is a drop-in replacement.
 
 This project keeps Telegram Bot API types updated for Telegraf. This project provides TypeScript types for the entire [Telegram Bot API](https://core.telegram.org/bots/api).
 
@@ -9,7 +11,18 @@ It contains zero bytes of executable code.
 ## Installation
 
 ```bash
-npm install --save-dev @telegraf/types
+npm install --save-dev @anysk/telegramma-types
+```
+
+### Using it as a drop-in replacement for `@telegraf/types`
+
+Because Telegraf imports `@telegraf/types` internally, add an npm override in
+your app's `package.json` to make Telegraf resolve to this fork:
+
+```jsonc
+"overrides": {
+  "@telegraf/types": "npm:@anysk/telegramma-types@^10.1.0"
+}
 ```
 
 ## Available Types
@@ -39,7 +52,7 @@ In fact, this pattern is used for various types, namely:
 The Telegram Bot API does not return just the requested data in the body of the response objects.
 
 Instead, they are wrapped inside an object that has an `ok: boolean` status flag, indicating success or failure of the preceding API request.
-This outer object is modelled in `@telegraf/types` by the `ApiResponse` type.
+This outer object is modelled in `@anysk/telegramma-types` by the `ApiResponse` type.
 
 ## Customizing `InputFile` and accessing API methods
 
@@ -70,7 +83,7 @@ interface MyInputFile {
 You can then customize the types to fit your needs by passing your custom `InputFile` to the `ApiMethods` type.
 
 ```ts
-import * as Telegram from "@telegraf/types";
+import * as Telegram from "@anysk/telegramma-types";
 
 type API = Telegram.ApiMethods<MyInputFile>;
 ```
@@ -108,4 +121,4 @@ This project is written for Deno and built for Node. Running `npm prepare` runs 
 
 ## Where do the types come from
 
-They're handwritten. [Typegram](https://github.com/KnorpelSenf/typegram) was started by [@KnorpelSenf](https://github.com/KnorpelSenf), who eventually used it as a starting point for grammY's [types](https://github.com/grammyjs/types) package. `@telegraf/types` started as a fork of Typegram, specialised for Telegraf. It is now independently maintained and updated from the Bot API directly.
+They're handwritten. [Typegram](https://github.com/KnorpelSenf/typegram) was started by [@KnorpelSenf](https://github.com/KnorpelSenf), who eventually used it as a starting point for grammY's [types](https://github.com/grammyjs/types) package. `@telegraf/types` started as a fork of Typegram, specialised for Telegraf. **`@anysk/telegramma-types`** is in turn a fork of `@telegraf/types`, kept current with the Bot API (latest: v10.1) directly from the [official spec](https://core.telegram.org/bots/api).
