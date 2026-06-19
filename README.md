@@ -3,6 +3,8 @@
 [![Bot API Version](https://img.shields.io/badge/Bot%20API-v10.1-f36caf.svg?style=flat-square&logo=Telegram&labelColor=white&color=blue)](https://core.telegram.org/bots/api) [![NPM version](https://img.shields.io/npm/v/@anysk/telegramma-types?style=flat-square&logo=npm&labelColor=fff&color=c53635)](https://npmjs.com/package/@anysk/telegramma-types)
 
 > **Fork notice.** This is a fork of [`@telegraf/types`](https://github.com/telegraf/types), published as **`@anysk/telegramma-types`** and kept up to date with the latest **Telegram Bot API (v10.1)**. The public API is unchanged, so it is a drop-in replacement.
+>
+> It is the types package behind [**`@anysk/telegramma`**](https://www.npmjs.com/package/@anysk/telegramma), a maintained fork of [Telegraf](https://github.com/telegraf/telegraf). If you use `@anysk/telegramma`, these types come bundled in and there is nothing extra to install or configure.
 
 This project keeps Telegram Bot API types updated for Telegraf. This project provides TypeScript types for the entire [Telegram Bot API](https://core.telegram.org/bots/api).
 
@@ -14,16 +16,8 @@ It contains zero bytes of executable code.
 npm install --save-dev @anysk/telegramma-types
 ```
 
-### Using it as a drop-in replacement for `@telegraf/types`
-
-Because Telegraf imports `@telegraf/types` internally, add an npm override in
-your app's `package.json` to make Telegraf resolve to this fork:
-
-```jsonc
-"overrides": {
-  "@telegraf/types": "npm:@anysk/telegramma-types@^10.1.0"
-}
-```
+If you use [`@anysk/telegramma`](https://www.npmjs.com/package/@anysk/telegramma)
+(the Telegraf fork) you already get these types — nothing extra to install.
 
 ## Available Types
 
