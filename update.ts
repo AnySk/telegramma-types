@@ -20,6 +20,7 @@ import type {
   PollAnswer,
 } from "./message.ts";
 import type {
+  BotSubscriptionUpdated,
   PaidMediaPurchased,
   PreCheckoutQuery,
   ShippingQuery,
@@ -165,6 +166,10 @@ export declare namespace Update {
     /** A new bot was created to be managed by the bot, or token or owner of a managed bot was changed */
     managed_bot: ManagedBotUpdated;
   }
+  export interface SubscriptionUpdate extends AbstractUpdate {
+    /** User payment subscription has changed */
+    subscription: BotSubscriptionUpdated;
+  }
   export interface GuestMessageUpdate<M extends Message = Message>
     extends AbstractUpdate {
     /** New guest message. The bot can use the field Message.guest_query_id and the method answerGuestQuery to send a message in response. */
@@ -198,4 +203,5 @@ export type Update =
   | Update.ChatBoostUpdate
   | Update.RemovedChatBoostUpdate
   | Update.ManagedBotUpdate
+  | Update.SubscriptionUpdate
   | Update.GuestMessageUpdate;

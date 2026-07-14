@@ -193,6 +193,8 @@ declare namespace ChatFullInfo {
     message_auto_delete_time?: number;
     /** True, if messages from the chat can't be forwarded to other chats */
     has_protected_content?: true;
+    /** The Community to which the chat belongs */
+    community?: Community;
   }
   /** Internal type representing group chats returned from `getChat`. */
   export interface GroupChat extends Chat.GroupChat {
@@ -240,6 +242,8 @@ declare namespace ChatFullInfo {
     has_visible_history?: true;
     /** True, if the bot can change the group sticker set */
     can_set_sticker_set?: true;
+    /** The Community to which the chat belongs */
+    community?: Community;
   }
   /** Internal type representing supergroup chats returned from `getChat`. */
   export interface SupergroupChat extends Chat.SupergroupChat {
@@ -307,6 +311,8 @@ declare namespace ChatFullInfo {
     linked_chat_id?: number;
     /** For supergroups, the location to which the supergroup is connected */
     location?: ChatLocation;
+    /** The Community to which the chat belongs */
+    community?: Community;
   }
   /** Internal type representing channel chats returned from `getChat`. */
   export interface ChannelChat extends Chat.ChannelChat {
@@ -348,6 +354,8 @@ declare namespace ChatFullInfo {
     linked_chat_id?: number;
     /** The bot that processes join request queries in the chat. The field is only available to chat administrators. */
     guard_bot?: User;
+    /** The Community to which the chat belongs */
+    community?: Community;
   }
 }
 
@@ -357,6 +365,14 @@ export type ChatFullInfo =
   | ChatFullInfo.GroupChat
   | ChatFullInfo.SupergroupChat
   | ChatFullInfo.ChannelChat;
+
+/** Represents a community (a group of chats). */
+export interface Community {
+  /** Unique identifier for this community. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier. */
+  id: number;
+  /** Name of the community */
+  name: string;
+}
 
 /** Describes the price of a suggested post. */
 export interface SuggestedPostPrice {
@@ -1022,6 +1038,8 @@ export interface BotCommand {
   command: string;
   /** Description of the command; 1-256 characters. */
   description: string;
+  /** True, if the command sends an ephemeral message, which can be seen only by the sender of the message and the bot */
+  is_ephemeral?: boolean;
 }
 
 /** This object describes the source of a chat boost. It can be one of

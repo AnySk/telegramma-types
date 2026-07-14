@@ -3,6 +3,7 @@ import type {
   Chat,
   ChatOwnerChanged,
   ChatOwnerLeft,
+  Community,
   DirectMessagesTopic,
   File,
   Gift,
@@ -14,7 +15,14 @@ import type {
   User,
 } from "./manage.ts";
 import type { InlineKeyboardMarkup } from "./markup.ts";
-import type { InputPollOptionMedia } from "./methods.ts";
+import type {
+  InputMediaAnimation,
+  InputMediaAudio,
+  InputMediaPhoto,
+  InputMediaVideo,
+  InputMediaVoiceNote,
+  InputPollOptionMedia,
+} from "./methods.ts";
 import type { PassportData } from "./passport.ts";
 import type { Invoice, RefundedPayment, SuccessfulPayment } from "./payment.ts";
 
@@ -30,6 +38,10 @@ export declare namespace Message {
     from?: User;
     /** Sender of the message, sent on behalf of a chat. For example, the channel itself for channel posts, the supergroup itself for messages from anonymous group administrators, the linked channel for messages automatically forwarded to the discussion group. For backward compatibility, the field from contains a fake sender user in non-channel chats, if the message was sent on behalf of a chat. */
     sender_chat?: Chat;
+    /** For ephemeral messages, the user who received the message */
+    receiver_user?: User;
+    /** For ephemeral messages, identifier of the ephemeral message inside this chat. The identifier may be reused for another ephemeral message after the message is deleted or expires. */
+    ephemeral_message_id?: number;
     /** Date the message was sent in Unix time. It is always a positive number, representing a valid date. */
     date: number;
     /** Chat the message belongs to */
@@ -321,6 +333,14 @@ export declare namespace Message {
     /** Service message: tasks were added to a checklist */
     checklist_tasks_added: ChecklistTasksAdded;
   }
+  export interface CommunityChatAddedMessage extends ServiceMessage {
+    /** Service message: chat added to a Community */
+    community_chat_added: CommunityChatAdded;
+  }
+  export interface CommunityChatRemovedMessage extends ServiceMessage {
+    /** Service message: chat removed from a Community */
+    community_chat_removed: CommunityChatRemoved;
+  }
   export interface PollOptionAddedMessage extends ServiceMessage {
     /** Service message: an option was added to a poll */
     poll_option_added: PollOptionAdded;
@@ -448,6 +468,8 @@ export type ServiceMessageBundle =
   | Message.PassportDataMessage
   | Message.ProximityAlertTriggeredMessage
   | Message.BoostAddedMessage
+  | Message.CommunityChatAddedMessage
+  | Message.CommunityChatRemovedMessage
   | Message.PollOptionAddedMessage
   | Message.PollOptionDeletedMessage
   | Message.ForumTopicCreatedMessage
@@ -925,10 +947,12 @@ export type ExternalReplyInfo =
 
 /** Describes reply parameters for the message that is being sent. */
 export interface ReplyParameters {
-  /** Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified */
-  message_id: number;
+  /** Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified. Required if ephemeral_message_id isn't specified. */
+  message_id?: number;
   /** If the message to be replied to is from a different chat, unique identifier for the chat or username of the channel (in the format `@channelusername`). Not supported for messages sent on behalf of a business account and messages from channel direct messages chats. */
   chat_id?: number | string;
+  /** Identifier of the incoming ephemeral message that will be replied to in the current chat. A reply to an ephemeral message must itself be an ephemeral message. An ephemeral message may only be replied to within 15 seconds of being sent. Required if message_id isn't specified. */
+  ephemeral_message_id?: number;
   /** Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account. */
   allow_sending_without_reply?: boolean;
   /** Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message. */
@@ -1305,6 +1329,15 @@ export interface ChecklistTasksAdded {
   /** List of tasks added to the checklist */
   tasks: ChecklistTask[];
 }
+
+/** Describes a service message about a chat being added to a community. */
+export interface CommunityChatAdded {
+  /** The new community to which the chat belongs */
+  community: Community;
+}
+
+/** Describes a service message about a chat being removed from a community. Currently holds no information. */
+export interface CommunityChatRemoved {}
 
 /** This object represents a phone contact. */
 export interface Contact {
@@ -2056,16 +2089,277 @@ export interface Link {
   url: string;
 }
 
-/** Describes a rich message to be sent. Exactly one of the fields html or markdown must be used. */
-export interface InputRichMessage {
+/** Describes a rich message to be sent. Exactly one of the fields html, markdown or blocks must be used. */
+export interface InputRichMessage<F> {
   /** Content of the rich message to send described using HTML formatting. See rich message formatting options for more details. */
   html?: string;
   /** Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details. */
   markdown?: string;
+  /** Content of the rich message to send described as a list of blocks */
+  blocks?: InputRichBlock<F>[];
+  /** List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, and tg://audio?id= links */
+  media?: InputRichMessageMedia<F>[];
   /** Pass True if the rich message must be shown right-to-left */
   is_rtl?: boolean;
   /** Pass True to skip automatic detection of entities (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text */
   skip_entity_detection?: boolean;
+}
+
+/** Describes a media element embedded in an outgoing rich message. */
+export interface InputRichMessageMedia<F> {
+  /** Unique identifier of the media used in a tg://photo?id=, tg://video?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed. */
+  id: string;
+  /** The media to be sent. Everything except the media itself and its properties is ignored. */
+  media:
+    | InputMediaAnimation<F>
+    | InputMediaAudio<F>
+    | InputMediaPhoto<F>
+    | InputMediaVideo<F>
+    | InputMediaVoiceNote<F>;
+}
+
+/** This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types: - InputRichBlockParagraph - InputRichBlockSectionHeading - InputRichBlockPreformatted - InputRichBlockFooter - InputRichBlockDivider - InputRichBlockMathematicalExpression - InputRichBlockAnchor - InputRichBlockList - InputRichBlockBlockQuotation - InputRichBlockPullQuotation - InputRichBlockCollage - InputRichBlockSlideshow - InputRichBlockTable - InputRichBlockDetails - InputRichBlockMap - InputRichBlockAnimation - InputRichBlockAudio - InputRichBlockPhoto - InputRichBlockVideo - InputRichBlockVoiceNote - InputRichBlockThinking */
+export type InputRichBlock<F> =
+  | InputRichBlockParagraph
+  | InputRichBlockSectionHeading
+  | InputRichBlockPreformatted
+  | InputRichBlockFooter
+  | InputRichBlockDivider
+  | InputRichBlockMathematicalExpression
+  | InputRichBlockAnchor
+  | InputRichBlockList<F>
+  | InputRichBlockBlockQuotation<F>
+  | InputRichBlockPullQuotation
+  | InputRichBlockCollage<F>
+  | InputRichBlockSlideshow<F>
+  | InputRichBlockTable
+  | InputRichBlockDetails<F>
+  | InputRichBlockMap
+  | InputRichBlockAnimation<F>
+  | InputRichBlockAudio<F>
+  | InputRichBlockPhoto<F>
+  | InputRichBlockVideo<F>
+  | InputRichBlockVoiceNote<F>
+  | InputRichBlockThinking;
+
+/** A block with an anchor, corresponding to the HTML tag <a> with the attribute name. */
+export interface InputRichBlockAnchor {
+  /** Type of the block, always "anchor" */
+  type: "anchor";
+  /** The name of the anchor */
+  name: string;
+}
+
+/** A block with an animation, corresponding to the HTML tag <video>. */
+export interface InputRichBlockAnimation<F> {
+  /** Type of the block, always "animation" */
+  type: "animation";
+  /** The animation. Caption is ignored. */
+  animation: InputMediaAnimation<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a music file, corresponding to the HTML tag <audio>. */
+export interface InputRichBlockAudio<F> {
+  /** Type of the block, always "audio" */
+  type: "audio";
+  /** The audio. Caption is ignored. */
+  audio: InputMediaAudio<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block quotation, corresponding to the HTML tag <blockquote>. */
+export interface InputRichBlockBlockQuotation<F> {
+  /** Type of the block, always "blockquote" */
+  type: "blockquote";
+  /** Content of the block */
+  blocks: InputRichBlock<F>[];
+  /** Credit of the block */
+  credit?: RichText;
+}
+
+/** A collage, corresponding to the custom HTML tag <tg-collage>. */
+export interface InputRichBlockCollage<F> {
+  /** Type of the block, always "collage" */
+  type: "collage";
+  /** Elements of the collage */
+  blocks: InputRichBlock<F>[];
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** An expandable block for details disclosure, corresponding to the HTML tag <details>. */
+export interface InputRichBlockDetails<F> {
+  /** Type of the block, always "details" */
+  type: "details";
+  /** Always shown summary of the block */
+  summary: RichText;
+  /** Content of the block */
+  blocks: InputRichBlock<F>[];
+  /** Pass True if the content of the block is visible by default */
+  is_open?: boolean;
+}
+
+/** A divider, corresponding to the HTML tag <hr/>. */
+export interface InputRichBlockDivider {
+  /** Type of the block, always "divider" */
+  type: "divider";
+}
+
+/** A footer, corresponding to the HTML tag <footer>. */
+export interface InputRichBlockFooter {
+  /** Type of the block, always "footer" */
+  type: "footer";
+  /** Text of the block */
+  text: RichText;
+}
+
+/** A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>. */
+export interface InputRichBlockList<F> {
+  /** Type of the block, always "list" */
+  type: "list";
+  /** Items of the list */
+  items: InputRichBlockListItem<F>[];
+}
+
+/** An item of a list to be sent. */
+export interface InputRichBlockListItem<F> {
+  /** The content of the item */
+  blocks: InputRichBlock<F>[];
+  /** Pass True if the item has a checkbox */
+  has_checkbox?: boolean;
+  /** Pass True if the item has a checked checkbox */
+  is_checked?: boolean;
+  /** For ordered lists, the numeric value of the item label */
+  value?: number;
+  /** For ordered lists, the type of the item label; must be one of "a" for lowercase letters, "A" for uppercase letters, "i" for lowercase Roman numerals, "I" for uppercase Roman numerals, or "1" for decimal numbers */
+  type?: "a" | "A" | "i" | "I" | "1";
+}
+
+/** A block with a map, corresponding to the custom HTML tag <tg-map>. The map's width and height must not exceed 10000 in total. The width and height ratio must be at most 20. */
+export interface InputRichBlockMap {
+  /** Type of the block, always "map" */
+  type: "map";
+  /** Location of the center of the map */
+  location: Location;
+  /** Map zoom level; 0-24 */
+  zoom: number;
+  /** Map width; 0-10000 */
+  width: number;
+  /** Map height; 0-10000 */
+  height: number;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <tg-math-block>. */
+export interface InputRichBlockMathematicalExpression {
+  /** Type of the block, always "mathematical_expression" */
+  type: "mathematical_expression";
+  /** The mathematical expression in LaTeX format */
+  expression: string;
+}
+
+/** A text paragraph, corresponding to the HTML tag <p>. */
+export interface InputRichBlockParagraph {
+  /** Type of the block, always "paragraph" */
+  type: "paragraph";
+  /** Text of the block */
+  text: RichText;
+}
+
+/** A block with a photo, corresponding to the HTML tag <img>. */
+export interface InputRichBlockPhoto<F> {
+  /** Type of the block, always "photo" */
+  type: "photo";
+  /** The photo. Caption is ignored. */
+  photo: InputMediaPhoto<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A preformatted text block, corresponding to the nested HTML tags <pre> and <code>. */
+export interface InputRichBlockPreformatted {
+  /** Type of the block, always "pre" */
+  type: "pre";
+  /** Text of the block */
+  text: RichText;
+  /** The programming language of the text */
+  language?: string;
+}
+
+/** A quotation with centered text, loosely corresponding to the HTML tag <aside>. */
+export interface InputRichBlockPullQuotation {
+  /** Type of the block, always "pullquote" */
+  type: "pullquote";
+  /** Text of the block */
+  text: RichText;
+  /** Credit of the block */
+  credit?: RichText;
+}
+
+/** A section heading, corresponding to the HTML tags <h1>, <h2>, <h3>, <h4>, <h5>, or <h6>. */
+export interface InputRichBlockSectionHeading {
+  /** Type of the block, always "heading" */
+  type: "heading";
+  /** Text of the block */
+  text: RichText;
+  /** Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest */
+  size: number;
+}
+
+/** A slideshow, corresponding to the custom HTML tag <tg-slideshow>. */
+export interface InputRichBlockSlideshow<F> {
+  /** Type of the block, always "slideshow" */
+  type: "slideshow";
+  /** Elements of the slideshow */
+  blocks: InputRichBlock<F>[];
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A table, corresponding to the HTML tag <table>. */
+export interface InputRichBlockTable {
+  /** Type of the block, always "table" */
+  type: "table";
+  /** Cells of the table */
+  cells: RichBlockTableCell[][];
+  /** Pass True if the table has borders */
+  is_bordered?: boolean;
+  /** Pass True if the table is striped */
+  is_striped?: boolean;
+  /** Caption of the table */
+  caption?: RichText;
+}
+
+/** A block with a "Thinking..." placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block. */
+export interface InputRichBlockThinking {
+  /** Type of the block, always "thinking" */
+  type: "thinking";
+  /** Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block. */
+  text: RichText;
+}
+
+/** A block with a video, corresponding to the HTML tag <video>. */
+export interface InputRichBlockVideo<F> {
+  /** Type of the block, always "video" */
+  type: "video";
+  /** The video. Caption is ignored. */
+  video: InputMediaVideo<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block with a voice note, corresponding to the HTML tag <audio>. */
+export interface InputRichBlockVoiceNote<F> {
+  /** Type of the block, always "voice_note" */
+  type: "voice_note";
+  /** The voice note. Caption is ignored. */
+  voice_note: InputMediaVoiceNote<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
 }
 
 /** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
