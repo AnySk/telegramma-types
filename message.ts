@@ -14,10 +14,18 @@ import type {
   UniqueGift,
   User,
 } from "./manage.ts";
-import type { InlineKeyboardMarkup } from "./markup.ts";
+import type {
+  CopyTextButton,
+  DisabledButton,
+  InlineKeyboardMarkup,
+  LoginUrl,
+  SwitchInlineQueryChosenChat,
+  WebAppInfo,
+} from "./markup.ts";
 import type {
   InputMediaAnimation,
   InputMediaAudio,
+  InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
   InputMediaVoiceNote,
@@ -334,11 +342,15 @@ export declare namespace Message {
     checklist_tasks_added: ChecklistTasksAdded;
   }
   export interface CommunityChatAddedMessage extends ServiceMessage {
-    /** Service message: chat added to a Community */
+    /** Service message: chat or bot added to a Community */
     community_chat_added: CommunityChatAdded;
   }
+  export interface CommunityChatJoinedMessage extends ServiceMessage {
+    /** Service message: chat was joined by a user from a Community */
+    community_chat_joined: CommunityChatJoined;
+  }
   export interface CommunityChatRemovedMessage extends ServiceMessage {
-    /** Service message: chat removed from a Community */
+    /** Service message: chat or bot removed from a Community */
     community_chat_removed: CommunityChatRemoved;
   }
   export interface PollOptionAddedMessage extends ServiceMessage {
@@ -469,6 +481,7 @@ export type ServiceMessageBundle =
   | Message.ProximityAlertTriggeredMessage
   | Message.BoostAddedMessage
   | Message.CommunityChatAddedMessage
+  | Message.CommunityChatJoinedMessage
   | Message.CommunityChatRemovedMessage
   | Message.PollOptionAddedMessage
   | Message.PollOptionDeletedMessage
@@ -945,6 +958,16 @@ export type ExternalReplyInfo =
   | ExternalReplyPoll
   | ExternalReplyVenue;
 
+/** Describes the parameters of an ephemeral message to send. */
+export interface EphemeralMessageParameters {
+  /** Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details. */
+  receiver_user_id: number;
+  /** Identifier of the callback query which triggered the message, if any */
+  callback_query_id?: string;
+  /** Pass True if the ephemeral message must be shown in place of the original message. Must be False for callback queries from ephemeral messages, which must be edited using regular editEphemeralMessage... methods. */
+  replace_callback_query_message?: boolean;
+}
+
 /** Describes reply parameters for the message that is being sent. */
 export interface ReplyParameters {
   /** Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified. Required if ephemeral_message_id isn't specified. */
@@ -1330,9 +1353,15 @@ export interface ChecklistTasksAdded {
   tasks: ChecklistTask[];
 }
 
-/** Describes a service message about a chat being added to a community. */
+/** Describes a service message about a chat or a bot being added to a community. */
 export interface CommunityChatAdded {
-  /** The new community to which the chat belongs */
+  /** The new community to which the chat or the bot belongs */
+  community: Community;
+}
+
+/** Describes a service message about a chat being joined by a user from a community. */
+export interface CommunityChatJoined {
+  /** The community from which the chat was joined */
   community: Community;
 }
 
@@ -1754,6 +1783,12 @@ export interface UniqueGiftInfo {
   gift: UniqueGift;
   /** Origin of the gift. Currently, either “upgrade” for gifts upgraded from regular gifts, “transfer” for gifts transferred from other users or channels, “resale” for gifts bought from other users, “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold through gift purchase offers */
   origin: "upgrade" | "transfer" | "resale" | "gifted_upgrade" | "offer";
+  /** Text of the message that was added to the gift */
+  text?: string;
+  /** Special entities that appear in the text */
+  entities?: MessageEntity[];
+  /** True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them */
+  is_private?: boolean;
   /** For gifts bought from other users, the currency in which the payment for the gift was done. Currently, one of “XTR” for Telegram Stars or “TON” for toncoins. */
   last_resale_currency?: "XTR" | "TON";
   /** For gifts bought from other users, the price paid for the gift in either Telegram Stars or nanotoncoins */
@@ -2097,7 +2132,7 @@ export interface InputRichMessage<F> {
   markdown?: string;
   /** Content of the rich message to send described as a list of blocks */
   blocks?: InputRichBlock<F>[];
-  /** List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, and tg://audio?id= links */
+  /** List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, tg://document?id=, and tg://audio?id= links */
   media?: InputRichMessageMedia<F>[];
   /** Pass True if the rich message must be shown right-to-left */
   is_rtl?: boolean;
@@ -2107,18 +2142,19 @@ export interface InputRichMessage<F> {
 
 /** Describes a media element embedded in an outgoing rich message. */
 export interface InputRichMessageMedia<F> {
-  /** Unique identifier of the media used in a tg://photo?id=, tg://video?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed. */
+  /** Unique identifier of the media used in a tg://photo?id=, tg://video?id=, tg://document?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed. */
   id: string;
   /** The media to be sent. Everything except the media itself and its properties is ignored. */
   media:
     | InputMediaAnimation<F>
     | InputMediaAudio<F>
+    | InputMediaDocument<F>
     | InputMediaPhoto<F>
     | InputMediaVideo<F>
     | InputMediaVoiceNote<F>;
 }
 
-/** This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types: - InputRichBlockParagraph - InputRichBlockSectionHeading - InputRichBlockPreformatted - InputRichBlockFooter - InputRichBlockDivider - InputRichBlockMathematicalExpression - InputRichBlockAnchor - InputRichBlockList - InputRichBlockBlockQuotation - InputRichBlockPullQuotation - InputRichBlockCollage - InputRichBlockSlideshow - InputRichBlockTable - InputRichBlockDetails - InputRichBlockMap - InputRichBlockAnimation - InputRichBlockAudio - InputRichBlockPhoto - InputRichBlockVideo - InputRichBlockVoiceNote - InputRichBlockThinking */
+/** This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types: - InputRichBlockParagraph - InputRichBlockSectionHeading - InputRichBlockPreformatted - InputRichBlockFooter - InputRichBlockDivider - InputRichBlockMathematicalExpression - InputRichBlockAnchor - InputRichBlockList - InputRichBlockBlockQuotation - InputRichBlockExpandableBlockQuotation - InputRichBlockPullQuotation - InputRichBlockCollage - InputRichBlockSlideshow - InputRichBlockTable - InputRichBlockDetails - InputRichBlockMap - InputRichBlockButtons - InputRichBlockAnimation - InputRichBlockAudio - InputRichBlockDocument - InputRichBlockPhoto - InputRichBlockVideo - InputRichBlockVoiceNote - InputRichBlockThinking */
 export type InputRichBlock<F> =
   | InputRichBlockParagraph
   | InputRichBlockSectionHeading
@@ -2129,14 +2165,17 @@ export type InputRichBlock<F> =
   | InputRichBlockAnchor
   | InputRichBlockList<F>
   | InputRichBlockBlockQuotation<F>
+  | InputRichBlockExpandableBlockQuotation
   | InputRichBlockPullQuotation
   | InputRichBlockCollage<F>
   | InputRichBlockSlideshow<F>
   | InputRichBlockTable
   | InputRichBlockDetails<F>
   | InputRichBlockMap
+  | InputRichBlockButtons
   | InputRichBlockAnimation<F>
   | InputRichBlockAudio<F>
+  | InputRichBlockDocument<F>
   | InputRichBlockPhoto<F>
   | InputRichBlockVideo<F>
   | InputRichBlockVoiceNote<F>
@@ -2180,6 +2219,16 @@ export interface InputRichBlockBlockQuotation<F> {
   credit?: RichText;
 }
 
+/** A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <tg-button-row>. */
+export interface InputRichBlockButtons {
+  /** Type of the block, always "buttons" */
+  type: "buttons";
+  /** List of 1-8 buttons to send */
+  buttons: RichMessageButton[];
+  /** Horizontal alignment of the buttons. Currently, must be one of "left", "center", or "right". */
+  align?: "left" | "center" | "right";
+}
+
 /** A collage, corresponding to the custom HTML tag <tg-collage>. */
 export interface InputRichBlockCollage<F> {
   /** Type of the block, always "collage" */
@@ -2206,6 +2255,26 @@ export interface InputRichBlockDetails<F> {
 export interface InputRichBlockDivider {
   /** Type of the block, always "divider" */
   type: "divider";
+}
+
+/** A block with a general file, corresponding to the custom HTML tag <tg-document>. */
+export interface InputRichBlockDocument<F> {
+  /** Type of the block, always "document" */
+  type: "document";
+  /** The document. Caption is ignored. */
+  document: InputMediaDocument<F>;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block quotation, corresponding to the HTML tag <blockquote> with custom attribute "expandable". */
+export interface InputRichBlockExpandableBlockQuotation {
+  /** Type of the block, always "expandable_blockquote" */
+  type: "expandable_blockquote";
+  /** Content of the block */
+  text: RichText;
+  /** Credit of the block */
+  credit?: RichText;
 }
 
 /** A footer, corresponding to the HTML tag <footer>. */
@@ -2245,11 +2314,11 @@ export interface InputRichBlockMap {
   /** Location of the center of the map */
   location: Location;
   /** Map zoom level; 0-24 */
-  zoom: number;
+  zoom?: number;
   /** Map width; 0-10000 */
-  width: number;
+  width?: number;
   /** Map height; 0-10000 */
-  height: number;
+  height?: number;
   /** Caption of the block */
   caption?: RichBlockCaption;
 }
@@ -2330,6 +2399,8 @@ export interface InputRichBlockTable {
   is_bordered?: boolean;
   /** Pass True if the table is striped */
   is_striped?: boolean;
+  /** Pass True if table cells must have smaller indents */
+  is_compact?: boolean;
   /** Caption of the table */
   caption?: RichText;
 }
@@ -2362,7 +2433,7 @@ export interface InputRichBlockVoiceNote<F> {
   caption?: RichBlockCaption;
 }
 
-/** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
+/** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextButton - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
 export type RichText =
   | string
   | RichText[]
@@ -2387,12 +2458,13 @@ export type RichText =
   | RichTextHashtag
   | RichTextCashtag
   | RichTextBotCommand
+  | RichTextButton
   | RichTextAnchor
   | RichTextAnchorLink
   | RichTextReference
   | RichTextReferenceLink;
 
-/** This object represents a block in a rich formatted message. Currently, it can be any of the following types: - RichBlockParagraph - RichBlockSectionHeading - RichBlockPreformatted - RichBlockFooter - RichBlockDivider - RichBlockMathematicalExpression - RichBlockAnchor - RichBlockList - RichBlockBlockQuotation - RichBlockPullQuotation - RichBlockCollage - RichBlockSlideshow - RichBlockTable - RichBlockDetails - RichBlockMap - RichBlockAnimation - RichBlockAudio - RichBlockPhoto - RichBlockVideo - RichBlockVoiceNote - RichBlockThinking */
+/** This object represents a block in a rich formatted message. Currently, it can be any of the following types: - RichBlockParagraph - RichBlockSectionHeading - RichBlockPreformatted - RichBlockFooter - RichBlockDivider - RichBlockMathematicalExpression - RichBlockAnchor - RichBlockList - RichBlockBlockQuotation - RichBlockExpandableBlockQuotation - RichBlockPullQuotation - RichBlockCollage - RichBlockSlideshow - RichBlockTable - RichBlockDetails - RichBlockMap - RichBlockButtons - RichBlockAnimation - RichBlockAudio - RichBlockDocument - RichBlockPhoto - RichBlockVideo - RichBlockVoiceNote - RichBlockThinking */
 export type RichBlock =
   | RichBlockParagraph
   | RichBlockSectionHeading
@@ -2403,14 +2475,17 @@ export type RichBlock =
   | RichBlockAnchor
   | RichBlockList
   | RichBlockBlockQuotation
+  | RichBlockExpandableBlockQuotation
   | RichBlockPullQuotation
   | RichBlockCollage
   | RichBlockSlideshow
   | RichBlockTable
   | RichBlockDetails
   | RichBlockMap
+  | RichBlockButtons
   | RichBlockAnimation
   | RichBlockAudio
+  | RichBlockDocument
   | RichBlockPhoto
   | RichBlockVideo
   | RichBlockVoiceNote
@@ -2464,6 +2539,16 @@ export interface RichBlockBlockQuotation {
   credit?: RichText;
 }
 
+/** A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <tg-button-row>. */
+export interface RichBlockButtons {
+  /** Type of the block, always "buttons" */
+  type: "buttons";
+  /** The buttons */
+  buttons: RichMessageButton[];
+  /** Horizontal alignment of the buttons. Currently, must be one of "left", "center", or "right". */
+  align?: "left" | "center" | "right";
+}
+
 /** Caption of a rich formatted block. */
 export interface RichBlockCaption {
   /** Block caption */
@@ -2498,6 +2583,26 @@ export interface RichBlockDetails {
 export interface RichBlockDivider {
   /** Type of the block, always "divider" */
   type: "divider";
+}
+
+/** A block with a general file, corresponding to the custom HTML tag <tg-document>. */
+export interface RichBlockDocument {
+  /** Type of the block, always "document" */
+  type: "document";
+  /** The document */
+  document: Document;
+  /** Caption of the block */
+  caption?: RichBlockCaption;
+}
+
+/** A block quotation, corresponding to the HTML tag <blockquote> with custom attribute "expandable". */
+export interface RichBlockExpandableBlockQuotation {
+  /** Type of the block, always "expandable_blockquote" */
+  type: "expandable_blockquote";
+  /** Content of the block */
+  text: RichText;
+  /** Credit of the block */
+  credit?: RichText;
 }
 
 /** A footer, corresponding to the HTML tag <footer>. */
@@ -2538,7 +2643,7 @@ export interface RichBlockMap {
   type: "map";
   /** Location of the center of the map */
   location: Location;
-  /** Map zoom level; 13-20 */
+  /** Map zoom level */
   zoom: number;
   /** Expected width of the map */
   width: number;
@@ -2626,6 +2731,8 @@ export interface RichBlockTable {
   is_bordered?: boolean;
   /** True, if the table is striped */
   is_striped?: boolean;
+  /** True, if table cells have smaller indents */
+  is_compact?: boolean;
   /** Caption of the table */
   caption?: RichText;
 }
@@ -2676,6 +2783,32 @@ export interface RichBlockVoiceNote {
   caption?: RichBlockCaption;
 }
 
+/** This object represents a button in a RichMessage. Exactly one of the fields other than text and style must be used to specify the type of the button. */
+export interface RichMessageButton {
+  /** Text of the button. May contain only plain text, RichTextCustomEmoji and RichTextDateTime entities. */
+  text: RichText;
+  /** Style of the button. Must be one of "danger", "success", "primary", or "link" (the button is shown as a regular link without borders). Apps may use theme-specific colors for the button background and text based on the style. The style "link" is allowed only for callback buttons. */
+  style?: "danger" | "success" | "primary" | "link";
+  /** HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings. */
+  url?: string;
+  /** Data to be sent in a callback query to the bot when the button is pressed, 1-64 bytes */
+  callback_data?: string;
+  /** Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account. */
+  web_app?: WebAppInfo;
+  /** An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. Not supported for ephemeral messages. */
+  login_url?: LoginUrl;
+  /** If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account. */
+  switch_inline_query?: string;
+  /** If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a business account. */
+  switch_inline_query_current_chat?: string;
+  /** If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a business account. */
+  switch_inline_query_chosen_chat?: SwitchInlineQueryChosenChat;
+  /** A button that copies the specified text to the clipboard */
+  copy_text?: CopyTextButton;
+  /** If set, then the button is disabled and does nothing */
+  disabled?: DisabledButton;
+}
+
 /** An anchor. */
 export interface RichTextAnchor {
   /** Type of the rich text, always "anchor" */
@@ -2720,6 +2853,14 @@ export interface RichTextBotCommand {
   text: RichText;
   /** The bot command */
   bot_command: string;
+}
+
+/** A button. */
+export interface RichTextButton {
+  /** Type of the rich text, always "button" */
+  type: "button";
+  /** The button */
+  button: RichMessageButton;
 }
 
 /** A cashtag. */

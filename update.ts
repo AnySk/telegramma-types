@@ -8,6 +8,7 @@ import type {
   ChatJoinRequest,
   ChatMemberUpdated,
   ManagedBotUpdated,
+  MessageGenerationStopped,
   MessageReactionCountUpdated,
   MessageReactionUpdated,
   User,
@@ -175,6 +176,10 @@ export declare namespace Update {
     /** New guest message. The bot can use the field Message.guest_query_id and the method answerGuestQuery to send a message in response. */
     guest_message: M;
   }
+  export interface StoppedMessageGenerationUpdate extends AbstractUpdate {
+    /** A user asked the bot to stop the generation of a message */
+    stopped_message_generation: MessageGenerationStopped;
+  }
 }
 
 /** This object represents an incoming update.
@@ -204,4 +209,5 @@ export type Update =
   | Update.RemovedChatBoostUpdate
   | Update.ManagedBotUpdate
   | Update.SubscriptionUpdate
-  | Update.GuestMessageUpdate;
+  | Update.GuestMessageUpdate
+  | Update.StoppedMessageGenerationUpdate;

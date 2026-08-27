@@ -498,6 +498,8 @@ export interface ChatAdministratorRights {
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages?: boolean;
+  /** True, if the administrator can manage chat welcome messages or directly send them in the case of bots */
+  can_send_welcome_messages: boolean;
 }
 
 /** This object contains information about one member of a chat. Currently, the following 6 types of chat members are supported:
@@ -570,6 +572,8 @@ export interface ChatMemberAdministrator extends AbstractChatMember {
   can_manage_tags?: boolean;
   /** True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only */
   can_manage_direct_messages?: boolean;
+  /** True, if the administrator can manage chat welcome messages or directly send them in the case of bots */
+  can_send_welcome_messages: boolean;
   /** Custom title for this user */
   custom_title?: string;
 }
@@ -724,6 +728,16 @@ export interface ManagedBotUpdated {
   user: User;
   /** Information about the bot */
   bot: User;
+}
+
+/** This object describes an update about a user stopping message generation. */
+export interface MessageGenerationStopped {
+  /** Chat in which the message is generated */
+  chat: Chat;
+  /** Unique identifier of the message thread in which the message is generated */
+  message_thread_id?: number;
+  /** Unique identifier of the message draft which was stopped */
+  draft_id: number;
 }
 
 /** Describes the birthdate of a user. */

@@ -616,7 +616,7 @@ export type InputMessageContent =
 
 /** Represents the content of a rich message to be sent as the result of an inline query. */
 export interface InputRichMessageContent {
-  /** The message to be sent. New files can't be uploaded here; use previously uploaded files via their file_id or specify URLs. */
+  /** The message to be sent. Only previously uploaded files may be used in the message. */
   rich_message: InputRichMessage<never>;
 }
 

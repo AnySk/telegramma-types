@@ -5,7 +5,12 @@ import type { MaybeInaccessibleMessage } from "./message.ts";
 export interface InlineKeyboardMarkup {
   /** Array of button rows, each represented by an Array of InlineKeyboardButton objects */
   inline_keyboard: InlineKeyboardButton[][];
+  /** Pass True if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply'. The value of the field can't be changed when the inline keyboard is edited. */
+  force_reply?: boolean;
 }
+
+// Re-exposes the top-level DisabledButton, whose name is shadowed by the variant of the same name inside the InlineKeyboardButton namespace.
+type DisabledButtonInfo = DisabledButton;
 
 export declare namespace InlineKeyboardButton {
   interface AbstractInlineKeyboardButton {
@@ -29,7 +34,7 @@ export declare namespace InlineKeyboardButton {
     web_app: WebAppInfo;
   }
   export interface LoginButton extends AbstractInlineKeyboardButton {
-    /** An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. */
+    /** An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. Not supported for ephemeral messages. */
     login_url: LoginUrl;
   }
   export interface SwitchInlineButton extends AbstractInlineKeyboardButton {
@@ -64,11 +69,16 @@ export declare namespace InlineKeyboardButton {
     NOTE: This type of button must always be the first button in the first row and can only be used in invoice messages. */
     pay: boolean;
   }
+  export interface DisabledButton extends AbstractInlineKeyboardButton {
+    /** If set, then the button is disabled and does nothing */
+    disabled: DisabledButtonInfo;
+  }
 }
 
 /** This object represents one button of an inline keyboard. Exactly one of the fields other than text, icon_custom_emoji_id, and style must be used to specify the type of the button. */
 export type InlineKeyboardButton =
   | InlineKeyboardButton.CallbackButton
+  | InlineKeyboardButton.DisabledButton
   | InlineKeyboardButton.GameButton
   | InlineKeyboardButton.LoginButton
   | InlineKeyboardButton.PayButton
@@ -78,8 +88,7 @@ export type InlineKeyboardButton =
   | InlineKeyboardButton.UrlButton
   | InlineKeyboardButton.WebAppButton;
 
-/** This object represents a parameter of the inline keyboard button used to automatically authorize a user. Serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in.
-Telegram apps support these buttons as of version 5.7. */
+/** This object represents a parameter of the inline keyboard button used to automatically authorize a user. It serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in. */
 export interface LoginUrl {
   /** An HTTPS URL to be opened with user authorization data added to the query string when the button is pressed. If the user refuses to provide authorization data, the original URL without information about the user will be opened. The data added is the same as described in Receiving authorization data.
 
@@ -87,7 +96,7 @@ export interface LoginUrl {
   url: string;
   /** New text of the button in forwarded messages. */
   forward_text?: string;
-  /** Username of a bot, which will be used for user authorization. See Setting up a bot for more details. If not specified, the current bot's username will be assumed. The url's domain must be the same as the domain linked with the bot. See Linking your domain to the bot for more details. */
+  /** Username of a bot, which will be used for user authorization; not supported in RichMessageButton. See Setting up a bot for more details. If not specified, the current bot's username will be assumed. The url's domain must be the same as the domain linked with the bot. See Linking your domain to the bot for more details. */
   bot_username?: string;
   /** Pass True to request the permission for your bot to send messages to the user. */
   request_write_access?: boolean;
@@ -112,6 +121,9 @@ export interface CopyTextButton {
   /** The text to be copied to the clipboard; 1-256 characters */
   text: string;
 }
+
+/** This object represents a disabled button which does nothing. Currently holds no information. */
+export interface DisabledButton {}
 
 /** A placeholder, currently holds no information. Use BotFather to set up your game. */
 export interface CallbackGame {}
@@ -164,6 +176,8 @@ export interface ReplyKeyboardMarkup {
 
 Example: A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard. */
   selective?: boolean;
+  /** Pass True if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply' */
+  force_reply?: boolean;
 }
 
 /** This object represents one button of the reply keyboard. At most one of the fields other than text, icon_custom_emoji_id, and style must be used to specify the type of the button. For simple text buttons, String can be used instead of this object to specify the button text. */
@@ -242,7 +256,7 @@ export interface ReplyKeyboardRemove {
   selective?: boolean;
 }
 
-/** Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode.
+/** Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in channels and for messages sent on behalf of a user account.
 
 Example: A poll bot for groups runs in privacy mode (only receives commands, replies to its messages and mentions). There could be two ways to create a new poll:
 
@@ -252,7 +266,7 @@ Guide the user through a step-by-step process. 'Please send me your question', '
 
 The last option is definitely more attractive. And if you use ForceReply in your bot's questions, it will receive the user's answers even if it only receives replies, commands and mentions - without any extra work for the user. */
 export interface ForceReply {
-  /** Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in channels and for messages sent on behalf of a Telegram Business account. */
+  /** Shows reply interface to the user, as if they had manually selected the bot's message and tapped 'Reply' */
   force_reply: true;
   /** The placeholder to be shown in the input field when the reply is active; 1-64 characters */
   input_field_placeholder?: string;
