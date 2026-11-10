@@ -1,8 +1,8 @@
 # Types for the Telegram Bot API
 
-[![Bot API Version](https://img.shields.io/badge/Bot%20API-v10.3-f36caf.svg?style=flat-square&logo=Telegram&labelColor=white&color=blue)](https://core.telegram.org/bots/api) [![NPM version](https://img.shields.io/npm/v/@anysk/telegramma-types?style=flat-square&logo=npm&labelColor=fff&color=c53635)](https://npmjs.com/package/@anysk/telegramma-types)
+[![Bot API Version](https://img.shields.io/badge/Bot%20API-v10.4-f36caf.svg?style=flat-square&logo=Telegram&labelColor=white&color=blue)](https://core.telegram.org/bots/api) [![NPM version](https://img.shields.io/npm/v/@anysk/telegramma-types?style=flat-square&logo=npm&labelColor=fff&color=c53635)](https://npmjs.com/package/@anysk/telegramma-types)
 
-> **Fork notice.** This is a fork of [`@telegraf/types`](https://github.com/telegraf/types), published as **`@anysk/telegramma-types`** and kept up to date with the latest **Telegram Bot API (v10.3)**. The public API is unchanged, so it is a drop-in replacement.
+> **Fork notice.** This is a fork of [`@telegraf/types`](https://github.com/telegraf/types), published as **`@anysk/telegramma-types`** and kept up to date with the latest **Telegram Bot API (v10.4)**. The public API is unchanged, so it is a drop-in replacement.
 >
 > It is the types package behind [**`@anysk/telegramma`**](https://www.npmjs.com/package/@anysk/telegramma), a maintained fork of [Telegraf](https://github.com/telegraf/telegraf). If you use `@anysk/telegramma`, these types come bundled in and there is nothing extra to install or configure.
 
@@ -115,4 +115,4 @@ This project is written for Deno and built for Node. Running `npm prepare` runs 
 
 ## Where do the types come from
 
-They're handwritten. [Typegram](https://github.com/KnorpelSenf/typegram) was started by [@KnorpelSenf](https://github.com/KnorpelSenf), who eventually used it as a starting point for grammY's [types](https://github.com/grammyjs/types) package. `@telegraf/types` started as a fork of Typegram, specialised for Telegraf. **`@anysk/telegramma-types`** is in turn a fork of `@telegraf/types`, kept current with the Bot API (latest: v10.3) directly from the [official spec](https://core.telegram.org/bots/api).
+They're handwritten. [Typegram](https://github.com/KnorpelSenf/typegram) was started by [@KnorpelSenf](https://github.com/KnorpelSenf), who eventually used it as a starting point for grammY's [types](https://github.com/grammyjs/types) package. `@telegraf/types` started as a fork of Typegram, specialised for Telegraf. **`@anysk/telegramma-types`** is in turn a fork of `@telegraf/types`, kept current with the Bot API (latest: v10.4) directly from the [official spec](https://core.telegram.org/bots/api).

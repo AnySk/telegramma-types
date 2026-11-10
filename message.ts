@@ -120,7 +120,7 @@ export declare namespace Message {
     entities?: MessageEntity[];
   }
   export interface CaptionableMessage extends CommonMessage {
-    /** Caption for the animation, audio, document, photo, video or voice */
+    /** Caption for the animation, audio, document, live photo, paid media, photo, video, voice, or widget */
     caption?: string;
     /** For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear in the caption */
     caption_entities?: MessageEntity[];
@@ -188,6 +188,12 @@ export declare namespace Message {
   export interface RichMessageMessage extends CommonMessage {
     /** Message is a rich formatted message */
     rich_message: RichMessage;
+  }
+  export interface WidgetMessage extends CaptionableMessage {
+    /** Message is an HTML widget, information about the widget */
+    widget: Widget;
+    /** True, if the caption must be shown above the widget */
+    show_caption_above_media?: true;
   }
   export interface ChecklistMessage extends CommonMessage {
     /** Message is a checklist */
@@ -353,6 +359,14 @@ export declare namespace Message {
     /** Service message: chat or bot removed from a Community */
     community_chat_removed: CommunityChatRemoved;
   }
+  export interface PaidMessagesWaivedMessage extends ServiceMessage {
+    /** Service message: the sender of the message used a link of the other user, which allows sending messages to the user without paying Telegram Stars */
+    paid_messages_waived: PaidMessagesWaived;
+  }
+  export interface TonWalletTransferMessage extends ServiceMessage {
+    /** Service message: a transfer with a TON wallet */
+    ton_wallet_transfer: TonWalletTransfer;
+  }
   export interface PollOptionAddedMessage extends ServiceMessage {
     /** Service message: an option was added to a poll */
     poll_option_added: PollOptionAdded;
@@ -483,6 +497,8 @@ export type ServiceMessageBundle =
   | Message.CommunityChatAddedMessage
   | Message.CommunityChatJoinedMessage
   | Message.CommunityChatRemovedMessage
+  | Message.PaidMessagesWaivedMessage
+  | Message.TonWalletTransferMessage
   | Message.PollOptionAddedMessage
   | Message.PollOptionDeletedMessage
   | Message.ForumTopicCreatedMessage
@@ -520,7 +536,8 @@ export type CommonMessageBundle =
   | Message.VenueMessage
   | Message.VideoMessage
   | Message.VideoNoteMessage
-  | Message.VoiceMessage;
+  | Message.VoiceMessage
+  | Message.WidgetMessage;
 
 /** Helper type that represents a message which occurs in a `reply_to_message` field. */
 type ReplyMessage =
@@ -683,7 +700,7 @@ export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
 
 export declare namespace MessageEntity {
   interface Abstract {
-    /** Type of the entity. Currently, can be “mention” (@username), “hashtag” (#hashtag or #hashtag@chatusername), “cashtag” ($USD or $USD@chatusername), “bot_command” (/start@jobs_bot), “url” (https://telegram.org), “email” (do-not-reply@telegram.org), “phone_number” (+1-212-555-0123), “bold” (bold text), “italic” (italic text), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users without usernames), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time) */
+    /** Type of the entity. Currently, can be “mention” (@username), “hashtag” (#hashtag or #hashtag@chatusername), “cashtag” ($USD or $USD@chatusername), “bot_command” (/start@jobs_bot), “url” (https://telegram.org), “email” (do-not-reply@telegram.org), “phone_number” (+1-212-555-0123), “bank_card_number” (bank card number), “ton_address” (address in the TON blockchain), “bold” (bold text), “italic” (italic text), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users without usernames), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time) */
     type: string;
     /** Offset in UTF-16 code units to the start of the entity */
     offset: number;
@@ -717,6 +734,14 @@ export declare namespace MessageEntity {
 
   export interface PhoneNumber extends Abstract {
     type: "phone_number";
+  }
+
+  export interface BankCardNumber extends Abstract {
+    type: "bank_card_number";
+  }
+
+  export interface TonAddress extends Abstract {
+    type: "ton_address";
   }
 
   export interface Bold extends Abstract {
@@ -788,6 +813,8 @@ export type MessageEntity =
   | MessageEntity.Url
   | MessageEntity.Email
   | MessageEntity.PhoneNumber
+  | MessageEntity.BankCardNumber
+  | MessageEntity.TonAddress
   | MessageEntity.Bold
   | MessageEntity.Blockquote
   | MessageEntity.ExpandableBlockquote
@@ -804,11 +831,13 @@ export type MessageEntity =
 
 /** This object contains information about the quoted part of a message that is replied to by the given message. */
 export interface TextQuote {
-  /** Text of the quoted part of a message that is replied to by the given message */
+  /** Text of the quoted part of a message that is replied to by the given message; may be empty if the quote was chosen from a rich message */
   text: string;
   /** Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are kept in quotes. */
   entities?: MessageEntity[];
-  /** Approximate quote position in the original message in UTF-16 code units as specified by the sender */
+  /** Rich text of the quote if it was chosen from a rich message. May contain only plain text, RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextSubscript, RichTextSuperscript, RichTextDateTime, RichTextCustomEmoji, RichTextMathematicalExpression, and arrays of them. */
+  rich_texts?: RichText[];
+  /** Approximate quote position in the original message in UTF-16 code units as specified by the sender. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds. */
   position: number;
   /** True, if the quote was chosen manually by the message sender. Otherwise, the quote was added automatically by the server. */
   is_manual?: true;
@@ -891,6 +920,11 @@ export interface ExternalReplyVoice extends AbstractExternalReply {
   voice: Voice;
 }
 
+export interface ExternalReplyWidget extends AbstractExternalReply {
+  /** Message is an HTML widget, information about the widget */
+  widget: Widget;
+}
+
 export interface ExternalReplyContact extends AbstractExternalReply {
   /** Message is a shared contact, information about the contact */
   contact: Contact;
@@ -948,6 +982,7 @@ export type ExternalReplyInfo =
   | ExternalReplyLivePhoto
   | ExternalReplyVideoNote
   | ExternalReplyVoice
+  | ExternalReplyWidget
   | ExternalReplyContact
   | ExternalReplyDice
   | ExternalReplyGame
@@ -960,9 +995,9 @@ export type ExternalReplyInfo =
 
 /** Describes the parameters of an ephemeral message to send. */
 export interface EphemeralMessageParameters {
-  /** Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details. */
-  receiver_user_id: number;
-  /** Identifier of the callback query which triggered the message, if any */
+  /** Identifier of the user who will receive the message; required unless the message is sent as an ephemeral reply to a callback query. If omitted, then the parameter chat_id of the method is ignored. If specified together with callback_query_id, then it must be the identifier of the user who pressed the button. Must be omitted for messages sent in chats where the bot isn't a member, unless the message is a reply to an ephemeral message. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details. */
+  receiver_user_id?: number;
+  /** Identifier of the callback query which triggered the message, if any. If specified and receiver_user_id is omitted, then the message is sent as an ephemeral reply to the callback query and will be shown only to the user who pressed the button. Ephemeral replies can't be sent to callback queries from messages in channel direct messages chats. The bot must still answer the callback query using answerCallbackQuery. */
   callback_query_id?: string;
   /** Pass True if the ephemeral message must be shown in place of the original message. Must be False for callback queries from ephemeral messages, which must be edited using regular editEphemeralMessage... methods. */
   replace_callback_query_message?: boolean;
@@ -978,13 +1013,15 @@ export interface ReplyParameters {
   ephemeral_message_id?: number;
   /** Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account. */
   allow_sending_without_reply?: boolean;
-  /** Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message. */
+  /** Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message. Ignored for ephemeral messages. */
   quote?: string;
   /** Mode for parsing entities in the quote. See formatting options for more details. */
   quote_parse_mode?: ParseMode;
   /** A list of special entities that appear in the quote. It can be specified instead of quote_parse_mode. */
   quote_entities?: MessageEntity[];
-  /** Position of the quote in the original message in UTF-16 code units */
+  /** A list of quoted parts of the rich message to be replied to. Must contain one element for each quoted text of the message in the order of their appearance. Each of the following is a separate quoted text: the text of a paragraph, a heading, a preformatted block, a footer, or a mathematical expression; the text and the credit of a block quotation or a pull quotation; the summary of a details block; the caption and each cell of a table; the text and the credit of a caption of a media block, a collage, a slideshow, or a map. Texts of blocks nested in lists, block quotations, details, collages, and slideshows are separate quoted texts too. The first and the last elements can contain only a part of the corresponding text; all other elements must contain the whole text. Formatting of the quoted parts must be kept, and rich texts must be nested in the same way as in the message received from the server. Mathematical expressions must be quoted entirely. Buttons in RichBlockButtons, anchors and dividers can't be quoted. Up to 32 quoted texts with total length up to 1024 characters can be specified. Only plain text, RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextSubscript, RichTextSuperscript, RichTextDateTime, RichTextCustomEmoji, RichTextMathematicalExpression, and arrays of them are kept in the quote; other rich text types are replaced with their text. If non-empty, then quote, quote_parse_mode and quote_entities are ignored. */
+  quote_rich_texts?: RichText[];
+  /** Position of the quote in the original message in UTF-16 code units. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds. */
   quote_position?: number;
   /** Identifier of the specific checklist task to be replied to */
   checklist_task_id?: number;
@@ -1367,6 +1404,37 @@ export interface CommunityChatJoined {
 
 /** Describes a service message about a chat being removed from a community. Currently holds no information. */
 export interface CommunityChatRemoved {}
+
+/** Describes a service message about the sender of the message using a link of the other user, which allows sending messages to the user without paying Telegram Stars. Currently holds no information. */
+export interface PaidMessagesWaived {}
+
+/** Describes a service message about a transfer with a TON wallet. */
+export interface TonWalletTransfer {
+  /** Unique identifier of the transaction; may be empty if the transfer hasn't been sent yet */
+  transaction_id: string;
+  /** Address of the transfer peer in the TON blockchain */
+  peer_address: string;
+  /** The amount of transferred cryptocurrency, in the smallest units of the cryptocurrency, as a decimal number; negative for outgoing transfers */
+  amount: string;
+  /** Comment added to the transfer; omitted if the comment is encrypted */
+  comment?: string;
+}
+
+/** This object describes an HTML widget. */
+export interface Widget {
+  /** Unique identifier of the shared widget, which can be used to send the widget again using the method sendSharedWidget; omitted if the widget isn't shared */
+  id?: string;
+  /** Width of the widget in logical pixels; omitted if the widget must occupy the whole width of the message bubble */
+  width?: number;
+  /** Height of the widget in logical pixels; omitted if the height of the widget isn't fixed */
+  height?: number;
+  /** HTML code of the widget */
+  html: string;
+  /** Public data of the widget, which is available wherever the widget is shown. All messages with a shared widget have the same public data. */
+  public_data?: string;
+  /** Data of the widget, which is specific to the message */
+  chat_data?: string;
+}
 
 /** This object represents a phone contact. */
 export interface Contact {
@@ -2433,7 +2501,7 @@ export interface InputRichBlockVoiceNote<F> {
   caption?: RichBlockCaption;
 }
 
-/** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextButton - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
+/** This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of RichText, or any of the following types: - RichTextBold - RichTextItalic - RichTextUnderline - RichTextStrikethrough - RichTextSpoiler - RichTextDateTime - RichTextTextMention - RichTextSubscript - RichTextSuperscript - RichTextMarked - RichTextCode - RichTextCustomEmoji - RichTextMathematicalExpression - RichTextUrl - RichTextEmailAddress - RichTextPhoneNumber - RichTextBankCardNumber - RichTextTonAddress - RichTextMention - RichTextHashtag - RichTextCashtag - RichTextBotCommand - RichTextButton - RichTextAnchor - RichTextAnchorLink - RichTextReference - RichTextReferenceLink */
 export type RichText =
   | string
   | RichText[]
@@ -2454,6 +2522,7 @@ export type RichText =
   | RichTextEmailAddress
   | RichTextPhoneNumber
   | RichTextBankCardNumber
+  | RichTextTonAddress
   | RichTextMention
   | RichTextHashtag
   | RichTextCashtag
@@ -2835,6 +2904,16 @@ export interface RichTextBankCardNumber {
   text: RichText;
   /** The bank card number */
   bank_card_number: string;
+}
+
+/** An address in the TON blockchain. */
+export interface RichTextTonAddress {
+  /** Type of the rich text, always "ton_address" */
+  type: "ton_address";
+  /** Text of the address */
+  text: RichText;
+  /** The address */
+  address: string;
 }
 
 /** A bold text. */

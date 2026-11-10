@@ -163,6 +163,10 @@ declare namespace ChatFullInfo {
     rating?: UserRating;
     /** For private chats, the first audio added to the profile of the user */
     first_profile_audio?: Audio;
+    /** For private chats, the TON wallet card of the user, which is shown on their profile page */
+    ton_wallet_card?: TonWalletCard;
+    /** The theme of the screen for sharing a link to the user or the chat; omitted if the default theme is used */
+    share_theme?: ChatShareTheme;
     /** List of available reactions allowed in the chat. If omitted, then all emoji reactions are allowed. */
     available_reactions?: ReactionType[];
     /** Custom emoji identifier of emoji chosen by the chat for the reply header and link preview background */
@@ -273,6 +277,8 @@ declare namespace ChatFullInfo {
     join_by_request?: true;
     /** The bot that processes join request queries in the chat. The field is only available to chat administrators. */
     guard_bot?: User;
+    /** The theme of the screen for sharing a link to the user or the chat; omitted if the default theme is used */
+    share_theme?: ChatShareTheme;
     /** Description, for groups, supergroups and channel chats */
     description?: string;
     /** Primary invite link, for groups, supergroups and channel chats */
@@ -354,6 +360,8 @@ declare namespace ChatFullInfo {
     linked_chat_id?: number;
     /** The bot that processes join request queries in the chat. The field is only available to chat administrators. */
     guard_bot?: User;
+    /** The theme of the screen for sharing a link to the user or the chat; omitted if the default theme is used */
+    share_theme?: ChatShareTheme;
     /** The Community to which the chat belongs */
     community?: Community;
   }
@@ -610,7 +618,7 @@ export interface ChatMemberRestricted extends AbstractChatMember {
   can_send_voice_notes: boolean;
   /** True, if the user is allowed to send polls and checklists */
   can_send_polls: boolean;
-  /** True, if the user is allowed to send animations, games, stickers and use inline bots */
+  /** True, if the user is allowed to send animations, games, stickers, widgets and use inline bots */
   can_send_other_messages: boolean;
   /** True, if the user is allowed to react to messages */
   can_react_to_messages: boolean;
@@ -698,7 +706,7 @@ export interface ChatPermissions {
   can_send_voice_notes?: boolean;
   /** True, if the user is allowed to send polls and checklists */
   can_send_polls?: boolean;
-  /** True, if the user is allowed to send animations, games, stickers and use inline bots */
+  /** True, if the user is allowed to send animations, games, stickers, widgets and use inline bots */
   can_send_other_messages?: boolean;
   /** True, if the user is allowed to react to messages. If omitted, defaults to the value of can_send_messages. */
   can_react_to_messages?: boolean;
@@ -796,21 +804,24 @@ export interface UserRating {
   next_level_rating?: number;
 }
 
-/** Describes the position of a clickable area within a story. */
-export interface StoryAreaPosition {
-  /** The abscissa of the area's center, as a percentage of the media width */
+/** Describes the position of a rectangle area on a story media or a TON wallet card. */
+export interface AreaPosition {
+  /** The abscissa of the area's center, as a percentage of the media or the card width */
   x_percentage: number;
-  /** The ordinate of the area's center, as a percentage of the media height */
+  /** The ordinate of the area's center, as a percentage of the media or the card height */
   y_percentage: number;
-  /** The width of the area's rectangle, as a percentage of the media width */
+  /** The width of the area's rectangle, as a percentage of the media or the card width */
   width_percentage: number;
-  /** The height of the area's rectangle, as a percentage of the media height */
+  /** The height of the area's rectangle, as a percentage of the media or the card height */
   height_percentage: number;
   /** The clockwise rotation angle of the rectangle, in degrees; 0-360 */
   rotation_angle: number;
-  /** The radius of the rectangle corner rounding, as a percentage of the media width */
+  /** The radius of the rectangle corner rounding, as a percentage of the media or the card width */
   corner_radius_percentage: number;
 }
+
+/** @deprecated Renamed to {@link AreaPosition} in Bot API 10.4. */
+export type StoryAreaPosition = AreaPosition;
 
 /** Describes the physical address of a location. */
 export interface LocationAddress {
@@ -887,7 +898,7 @@ export interface StoryAreaTypeUniqueGift {
 /** Describes a clickable area on a story media. */
 export interface StoryArea {
   /** Position of the area */
-  position: StoryAreaPosition;
+  position: AreaPosition;
   /** Type of the area */
   type: StoryAreaType;
 }
@@ -1415,6 +1426,202 @@ export interface StarAmount {
   amount: number;
   /** Optional. The number of 1/1000000000 shares of Telegram Stars; from -999999999 to 999999999; can be negative if and only if amount is non-positive */
   nanostar_amount?: number;
+}
+
+/** This object represents an attribute of an NFT in the TON blockchain. */
+export interface TonNftAttribute {
+  /** Trait type of the attribute */
+  trait_type: string;
+  /** Value of the attribute */
+  value: string;
+}
+
+/** This object represents an NFT in the TON blockchain. */
+export interface TonNft {
+  /** Address of the NFT */
+  address: string;
+  /** Address of the collection to which the NFT belongs; omitted if unknown */
+  collection_address?: string;
+  /** Index of the NFT among all NFTs from the collection as a decimal number */
+  index: string;
+  /** Name of the NFT */
+  name: string;
+  /** Description of the NFT */
+  description: string;
+  /** Attributes of the NFT */
+  attributes?: TonNftAttribute[];
+  /** The unique gift corresponding to the NFT */
+  gift?: UniqueGift;
+}
+
+/** This object describes a sticker on a TON wallet card. */
+export interface TonWalletCardSticker {
+  /** Position of the sticker on the card */
+  position: AreaPosition;
+  /** The NFT shown as the sticker */
+  nft: TonNft;
+}
+
+/** This object describes a TON wallet card, which is shown on the profile page of a user to everyone. */
+export interface TonWalletCard {
+  /** Address of the wallet */
+  address: string;
+  /** Balance of the wallet, in the smallest units of the cryptocurrency, as a decimal number */
+  amount: string;
+  /** Stickers placed on the card */
+  stickers: TonWalletCardSticker[];
+  /** Address of the NFT of one of the stickers, whose colors must be used for the card background; omitted if the default background must be used */
+  background_nft_address?: string;
+}
+
+/** A regular emoji. */
+export interface EmojiTypeEmoji {
+  /** Type of the emoji, always "emoji" */
+  type: "emoji";
+  /** The emoji */
+  emoji: string;
+}
+
+/** A custom emoji. */
+export interface EmojiTypeCustomEmoji {
+  /** Type of the emoji, always "custom_emoji" */
+  type: "custom_emoji";
+  /** Identifier of the custom emoji. Use getCustomEmojiStickers to get full information about the sticker. */
+  custom_emoji_id: string;
+}
+
+/** This object describes an emoji. Currently, it can be one of
+
+- EmojiTypeEmoji
+- EmojiTypeCustomEmoji */
+export type EmojiType = EmojiTypeEmoji | EmojiTypeCustomEmoji;
+
+/** The theme with emoji placed on a background. */
+export interface ChatShareThemeEmoji {
+  /** Type of the theme, always "emoji" */
+  type: "emoji";
+  /** The emoji; 0-6 regular or custom emoji */
+  emojis: EmojiType[];
+  /** Identifier of the backdrop used as the background; omitted if the default background is used. Use getChatShareThemeBackdrops to get details about the backdrop. */
+  background_backdrop_id?: number;
+}
+
+/** The theme based on a unique gift owned by the user or the chat. */
+export interface ChatShareThemeUniqueGift {
+  /** Type of the theme, always "unique_gift" */
+  type: "unique_gift";
+  /** The gift */
+  gift: UniqueGift;
+}
+
+/** This object describes the theme of the screen for sharing a link to a user or a chat. Currently, it can be one of
+
+- ChatShareThemeEmoji
+- ChatShareThemeUniqueGift */
+export type ChatShareTheme = ChatShareThemeEmoji | ChatShareThemeUniqueGift;
+
+/** This object describes a backdrop, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. */
+export interface ChatShareThemeBackdrop {
+  /** Unique identifier of the backdrop */
+  id: number;
+  /** Name of the backdrop */
+  name: string;
+  /** Colors of the backdrop */
+  colors: UniqueGiftBackdropColors;
+}
+
+/** This object contains a list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. */
+export interface ChatShareThemeBackdrops {
+  /** The list of backdrops */
+  backdrops: ChatShareThemeBackdrop[];
+}
+
+/** The query contains data for the bot. */
+export interface WidgetQueryTypeData {
+  /** Type of the query, always "data" */
+  type: "data";
+  /** TON wallet card of the user who sent the query, if it was sent to the bot along with the query */
+  wallet_card?: TonWalletCard;
+}
+
+/** The query contains data signed by a TON wallet of the user who sent the query. The data is signed for the domain bot<bot_id>, where <bot_id> is the identifier of the bot. */
+export interface WidgetQueryTypeSignData {
+  /** Type of the query, always "sign_data" */
+  type: "sign_data";
+  /** The wallet that signed the data */
+  wallet: WidgetQueryWallet;
+  /** JSON-serialized signed data */
+  sign_data: string;
+}
+
+/** The query notifies the bot about a transaction sent from a TON wallet of the user who sent the query. */
+export interface WidgetQueryTypeSentTransaction {
+  /** Type of the query, always "sent_transaction" */
+  type: "sent_transaction";
+  /** The wallet from which the transaction was sent */
+  wallet: WidgetQueryWallet;
+  /** Value of msg_hash of the transaction */
+  msg_hash: string;
+}
+
+/** This object describes the type of a query from a widget. Currently, it can be one of
+
+- WidgetQueryTypeData
+- WidgetQueryTypeSignData
+- WidgetQueryTypeSentTransaction */
+export type WidgetQueryType =
+  | WidgetQueryTypeData
+  | WidgetQueryTypeSignData
+  | WidgetQueryTypeSentTransaction;
+
+/** This object describes a TON wallet of the user, which is used in a query from a widget. */
+export interface WidgetQueryWallet {
+  /** Address of the wallet */
+  address: string;
+  /** Balance of the wallet, in the smallest units of the cryptocurrency, as a decimal number */
+  amount: string;
+  /** Hex-encoded public key of the wallet; omitted if unknown */
+  public_key?: string;
+  /** Base64-encoded serialized StateInit of the wallet contract; omitted if and only if public_key is omitted */
+  state_init?: string;
+}
+
+/** This object represents an incoming query from a widget in a message sent by the bot or via the bot. Use answerWidgetQuery to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets. */
+export interface WidgetQuery {
+  /** Unique identifier for this query */
+  id: string;
+  /** Sender */
+  from: User;
+  /** Chat with the message containing the widget; omitted if the widget is in an inline message */
+  chat?: Chat;
+  /** Identifier of the message containing the widget; omitted if the widget is in an inline message */
+  message_id?: number;
+  /** Identifier of the inline message containing the widget */
+  inline_message_id?: string;
+  /** Global identifier, uniquely corresponding to the chat to which the message with the widget was sent */
+  chat_instance: string;
+  /** For widgets in inline messages, type of the chat to which the message was sent. Can be either "sender" for a private chat with the inline query sender, "private", "group", "supergroup", or "channel". */
+  chat_type?: "sender" | Chat["type"];
+  /** Type of the query */
+  type: WidgetQueryType;
+  /** Data of the query, 1-64 bytes */
+  data: string;
+  /** Unique identifier of the shared widget, which sent the query; omitted if the widget isn't shared */
+  widget_id?: string;
+}
+
+/** This object represents an incoming query from a forwarded message with a shared widget created by the bot. Use answerWidgetQuery to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets. */
+export interface SharedWidgetQuery {
+  /** Unique identifier for this query */
+  id: string;
+  /** Sender */
+  from: User;
+  /** Type of the query */
+  type: WidgetQueryType;
+  /** Data of the query, 1-64 bytes */
+  data: string;
+  /** Unique identifier of the shared widget, which sent the query */
+  widget_id: string;
 }
 
 /** This object describes the access settings of a bot. */

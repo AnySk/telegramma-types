@@ -11,7 +11,9 @@ import type {
   MessageGenerationStopped,
   MessageReactionCountUpdated,
   MessageReactionUpdated,
+  SharedWidgetQuery,
   User,
+  WidgetQuery,
 } from "./manage.ts";
 import type { CallbackQuery } from "./markup.ts";
 import type {
@@ -180,6 +182,14 @@ export declare namespace Update {
     /** A user asked the bot to stop the generation of a message */
     stopped_message_generation: MessageGenerationStopped;
   }
+  export interface WidgetQueryUpdate extends AbstractUpdate {
+    /** New incoming query from a widget in a message sent by the bot or via the bot */
+    widget_query: WidgetQuery;
+  }
+  export interface SharedWidgetQueryUpdate extends AbstractUpdate {
+    /** New incoming query from a forwarded message with a shared widget */
+    shared_widget_query: SharedWidgetQuery;
+  }
 }
 
 /** This object represents an incoming update.
@@ -210,4 +220,6 @@ export type Update =
   | Update.ManagedBotUpdate
   | Update.SubscriptionUpdate
   | Update.GuestMessageUpdate
-  | Update.StoppedMessageGenerationUpdate;
+  | Update.StoppedMessageGenerationUpdate
+  | Update.WidgetQueryUpdate
+  | Update.SharedWidgetQueryUpdate;

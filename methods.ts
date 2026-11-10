@@ -20,6 +20,7 @@ import type {
   ChatMemberAdministrator,
   ChatMemberOwner,
   ChatPermissions,
+  ChatShareThemeBackdrops,
   File,
   ForumTopic,
   Gifts,
@@ -28,6 +29,7 @@ import type {
   StarAmount,
   StoryArea,
   SuggestedPostParameters,
+  UniqueGift,
   UserChatBoosts,
   UserFromGetMe,
   UserProfileAudios,
@@ -156,8 +158,8 @@ export type ApiMethods<F> = {
   sendMessage(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -234,7 +236,7 @@ export type ApiMethods<F> = {
     protect_content?: boolean;
   }): MessageId[];
 
-  /** Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success. */
+  /** Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success. */
   copyMessage(args: {
     /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
     chat_id: number | string;
@@ -276,7 +278,7 @@ export type ApiMethods<F> = {
       | ForceReply;
   }): MessageId;
 
-  /** Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned. */
+  /** Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned. */
   copyMessages(args: {
     /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
     chat_id: number | string;
@@ -300,8 +302,8 @@ export type ApiMethods<F> = {
   sendPhoto(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -346,8 +348,8 @@ export type ApiMethods<F> = {
   sendAudio(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -394,8 +396,8 @@ export type ApiMethods<F> = {
   sendDocument(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -438,8 +440,8 @@ export type ApiMethods<F> = {
   sendVideo(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -496,8 +498,8 @@ export type ApiMethods<F> = {
   sendAnimation(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -548,8 +550,8 @@ export type ApiMethods<F> = {
   sendVoice(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -591,8 +593,8 @@ export type ApiMethods<F> = {
   sendVideoNote(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -709,8 +711,8 @@ export type ApiMethods<F> = {
   sendLocation(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -753,8 +755,8 @@ export type ApiMethods<F> = {
   sendVenue(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -801,8 +803,8 @@ export type ApiMethods<F> = {
   sendContact(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -1392,7 +1394,7 @@ export type ApiMethods<F> = {
 
   /** Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects. */
   getForumTopicIconStickers(): Sticker[];
-  /** Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object. */
+  /** Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. In the case of a private chat, a link to the topic can be created in the format https://t.me/<bot_username>/<message_thread_id>; the link opens the topic only for the user. Returns information about the created topic as a ForumTopic object. */
   createForumTopic(args: {
     /** Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`) */
     chat_id: number | string;
@@ -1662,6 +1664,10 @@ export type ApiMethods<F> = {
     user_id: number;
     /** Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description. */
     custom_description?: string;
+    /** Mode for parsing entities in the custom description. See formatting options for more details. Only "text_link" entities are supported. */
+    custom_description_parse_mode?: ParseMode;
+    /** A list of special entities that appear in the custom description, which can be specified instead of custom_description_parse_mode. Only "text_link" entities are supported. */
+    custom_description_entities?: MessageEntity[];
   }): true;
 
   /** Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success. */
@@ -1670,6 +1676,10 @@ export type ApiMethods<F> = {
     chat_id: number | string;
     /** Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description. */
     custom_description?: string;
+    /** Mode for parsing entities in the custom description. See formatting options for more details. Only "text_link" entities are supported. */
+    custom_description_parse_mode?: ParseMode;
+    /** A list of special entities that appear in the custom description, which can be specified instead of custom_description_parse_mode. Only "text_link" entities are supported. */
+    custom_description_entities?: MessageEntity[];
   }): true;
 
   /** Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success. */
@@ -1851,6 +1861,20 @@ export type ApiMethods<F> = {
     /** Unique identifier of the regular gift that should be converted to Telegram Stars */
     owned_gift_id: string;
   }): true;
+
+  /** Deletes a regular gift owned by a managed business account without receiving Telegram Stars for it. Requires the can_convert_gifts_to_stars business bot right. The gift can be deleted only if it isn't limited (the field total_count of the Gift is omitted) and wasn't refunded. Returns True on success. */
+  deleteBusinessAccountGift(args: {
+    /** Unique identifier of the business connection */
+    business_connection_id: string;
+    /** Unique identifier of the regular gift that should be deleted */
+    owned_gift_id: string;
+  }): true;
+
+  /** Use this method to get information about a unique gift by its name. Returns a UniqueGift object on success. */
+  getUniqueGift(args: {
+    /** Unique name of the gift */
+    name: string;
+  }): UniqueGift;
 
   /** Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success. */
   upgradeGift(args: {
@@ -2242,7 +2266,7 @@ export type ApiMethods<F> = {
   sendGift(args: {
     /** Required if chat_id is not specified. Unique identifier of the target user who will receive the gift */
     user_id?: number;
-    /** Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the format `@channelusername`) that will receive the gift */
+    /** Required if user_id is not specified. Unique identifier for the chat that will receive the gift or username of the channel (in the format `@channelusername`) */
     chat_id?: number | string;
     /** Identifier of the gift */
     gift_id: string;
@@ -2260,8 +2284,8 @@ export type ApiMethods<F> = {
   sendSticker(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format `@channelusername`); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -2772,8 +2796,8 @@ export type ApiMethods<F> = {
   sendLivePhoto(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername) */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target channel (in the format @channelusername); required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -2818,8 +2842,8 @@ export type ApiMethods<F> = {
   sendRichMessage(args: {
     /** Unique identifier of the business connection on behalf of which the message will be sent */
     business_connection_id?: string;
-    /** Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username */
-    chat_id: number | string;
+    /** Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query */
+    chat_id?: number | string;
     /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
     message_thread_id?: number;
     /** Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat */
@@ -2879,6 +2903,123 @@ export type ApiMethods<F> = {
     /** The URL of the Mini App to be opened */
     web_app_url: string;
   }): boolean;
+
+  /** Use this method to send a message with an HTML widget. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned. */
+  sendWidget(args: {
+    /** Unique identifier for the target chat or username of the target supergroup (in the format `@username`) */
+    chat_id: number | string;
+    /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
+    message_thread_id?: number;
+    /** HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level. */
+    html: string;
+    /** Width of the widget in logical pixels; omit if the widget must occupy the whole width of the message bubble. The width is clamped by the app to the range from 200 to the maximum width of the message bubble. */
+    width?: number;
+    /** Height of the widget in logical pixels; omit if the height of the widget isn't fixed. The height is clamped by the app to the range 50-600. */
+    height?: number;
+    /** Public data of the widget, 0-1024 bytes, which will be available wherever the widget is shown. If the widget is shared, then all messages with it will have the same public data. */
+    public_data?: string;
+    /** Data of the widget, which is specific to the message, 0-1024 bytes */
+    chat_data?: string;
+    /** Widget caption, 0-1024 characters after entities parsing */
+    caption?: string;
+    /** Mode for parsing entities in the widget caption. See formatting options for more details. */
+    parse_mode?: ParseMode;
+    /** A list of special entities that appear in the caption, which can be specified instead of parse_mode */
+    caption_entities?: MessageEntity[];
+    /** Pass True if the caption must be shown above the widget */
+    show_caption_above_media?: boolean;
+    /** Pass True to allow the widget to send queries to the bot */
+    allow_queries?: boolean;
+    /** Pass True to create a shared widget, which can be sent again using the method sendSharedWidget */
+    is_shared?: boolean;
+    /** Sends the message silently. Users will receive a notification with no sound. */
+    disable_notification?: boolean;
+    /** Protects the contents of the sent message from forwarding and saving */
+    protect_content?: boolean;
+    /** Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+    allow_paid_broadcast?: boolean;
+    /** Unique identifier of the message effect to be added to the message; for private chats only */
+    message_effect_id?: string;
+    /** Description of the message to reply to */
+    reply_parameters?: ReplyParameters;
+    /** Additional interface options. An object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user */
+    reply_markup?:
+      | InlineKeyboardMarkup
+      | ReplyKeyboardMarkup
+      | ReplyKeyboardRemove
+      | ForceReply;
+  }): Message.WidgetMessage;
+
+  /** Use this method to send again a shared widget created by the bot. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned. */
+  sendSharedWidget(args: {
+    /** Unique identifier for the target chat or username of the target supergroup (in the format `@username`) */
+    chat_id: number | string;
+    /** Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only */
+    message_thread_id?: number;
+    /** Unique identifier of the shared widget */
+    widget_id: string;
+    /** Data of the widget, which is specific to the message, 0-1024 bytes */
+    chat_data?: string;
+    /** Widget caption, 0-1024 characters after entities parsing */
+    caption?: string;
+    /** Mode for parsing entities in the widget caption. See formatting options for more details. */
+    parse_mode?: ParseMode;
+    /** A list of special entities that appear in the caption, which can be specified instead of parse_mode */
+    caption_entities?: MessageEntity[];
+    /** Pass True if the caption must be shown above the widget */
+    show_caption_above_media?: boolean;
+    /** Sends the message silently. Users will receive a notification with no sound. */
+    disable_notification?: boolean;
+    /** Protects the contents of the sent message from forwarding and saving */
+    protect_content?: boolean;
+    /** Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+    allow_paid_broadcast?: boolean;
+    /** Unique identifier of the message effect to be added to the message; for private chats only */
+    message_effect_id?: string;
+    /** Description of the message to reply to */
+    reply_parameters?: ReplyParameters;
+    /** Additional interface options. An object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user */
+    reply_markup?:
+      | InlineKeyboardMarkup
+      | ReplyKeyboardMarkup
+      | ReplyKeyboardRemove
+      | ForceReply;
+  }): Message.WidgetMessage;
+
+  /** Use this method to edit data of a widget in a message sent by the bot or via the bot (for inline bots). Public data of a shared widget can be changed at most once per second. On success, True is returned. */
+  editMessageWidgetData(args: {
+    /** Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target supergroup (in the format `@username`) */
+    chat_id?: number | string;
+    /** Required if inline_message_id is not specified. Identifier of the message with the widget. */
+    message_id?: number;
+    /** Required if chat_id and message_id are not specified. Identifier of the inline message. */
+    inline_message_id?: string;
+    /** New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data. If omitted, then the public data isn't changed. */
+    public_data?: string;
+    /** New data of the widget, which is specific to the message, 0-1024 bytes; pass an empty string to remove the data. If omitted, then the data isn't changed. */
+    chat_data?: string;
+  }): true;
+
+  /** Use this method to edit public data of a shared widget created by the bot. A shared widget can be edited at most once per second. On success, True is returned. */
+  editSharedWidgetData(args: {
+    /** Unique identifier of the shared widget */
+    widget_id: string;
+    /** New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data */
+    public_data: string;
+    /** The maximum amount of time in seconds that the public data of the widget may be cached client-side; 5-3600. If omitted, then the current value is kept, which is 30 by default. */
+    cache_time?: number;
+  }): true;
+
+  /** Use this method to send an answer to a query from a widget. The query must be answered within 15 seconds. The answer is received only by the widget that sent the query and doesn't change data of the widget; use editMessageWidgetData or editSharedWidgetData to change it. On success, True is returned. */
+  answerWidgetQuery(args: {
+    /** Unique identifier for the query to be answered */
+    widget_query_id: string;
+    /** Data to be returned to the widget, 0-1024 bytes */
+    data?: string;
+  }): true;
+
+  /** Use this method to get the list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. Requires no parameters. Returns a ChatShareThemeBackdrops object. */
+  getChatShareThemeBackdrops(): ChatShareThemeBackdrops;
 };
 
 /** This object describes a sticker to be added to a sticker set. */
